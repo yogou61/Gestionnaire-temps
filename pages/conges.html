@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Congés - Vue Annuelle</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+</head>
+<body class="has-fixed-header">
+    <header class="main-header">
+        <a href="dashboard.html" class="logo">GestionTemps</a>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Tableau de Bord</a></li>
+                <li><a href="pointage.html">Pointage</a></li>
+                <li><a href="conges.html" class="active">Congés</a></li>
+                <li><a href="fiches-frais.html">Fiches de Frais</a></li>
+                <li><a href="fiches-horaires.html">Fiches Horaires</a></li>
+                <li><a href="profil.html">Profil</a></li>
+                <li><a href="#" id="logoutBtn">Déconnexion</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="conges-layout-grid">
+            
+            <!-- Colonne de Gauche -->
+            <aside class="conges-sidebar-left">
+                <div class="section" id="controlesSauvegardeSection">
+                    <h2>Contrôles & Sauvegarde</h2>
+                    <div class="form-group">
+                        <label for="controleAnneeDebut">Période :</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="number" id="controleAnneeDebut" value="2025" min="2000" max="2050" style="width: 80px;">
+                            <span id="periodeAffichee">2025 - 2026</span>
+                        </div>
+                    </div>
+                    <button type="button" id="actualiserPeriodeBtn" class="btn btn-primary btn-block">Actualiser Période</button>
+                    <div class="button-group-horizontal">
+                        <button type="button" id="exportCongesBtn" class="btn btn-export btn-block">Exporter</button>
+                        <label for="importCongesFile" class="btn btn-import btn-block button-like-label">Importer</label>
+                        <input type="file" id="importCongesFile" accept=".json" style="display: none;">
+                    </div>
+                    <button type="button" id="imprimerVueBtn" class="btn btn-print btn-block">Imprimer</button>
+                </div>
+
+                <div class="section legend-section">
+                    <h3>Légende</h3>
+                    <div id="congesLegendContainer">
+                        <!-- La légende sera remplie par JS -->
+                    </div>
+                </div>
+
+                <div class="section" id="noticeUtilisationSection">
+                    <h3>Notice d'Utilisation</h3>
+                    <button type="button" id="afficherNoticeBtn" class="btn btn-grey btn-block">Afficher Notice</button>
+                </div>
+            </aside>
+
+            <!-- Colonne Centrale - Calendrier -->
+            <div class="conges-main-calendar section" id="calendarViewPrintableArea">
+                <h1 class="calendar-view-title">Vue Annuelle 2025 - 2026</h1>
+                <div id="customAnnualCalendarContainer" class="annual-calendar-placeholder">
+                    <!-- Mini-calendriers générés par JS -->
+                </div>
+            </div>
+
+            <!-- Colonne de Droite -->
+            <aside class="conges-sidebar-right">
+                <div class="section" id="saisieAbsencesSection">
+                    <h2>Saisie des Absences</h2>
+                    <form id="saisieAbsencesForm">
+                        <div class="form-group">
+                            <label for="saisieTypeAbsence">Type :</label>
+                            <select id="saisieTypeAbsence" name="saisieTypeAbsence" required>
+                                <option value="">Sélectionner...</option>
+                                <!-- Options remplies par JS -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="saisieDateDebut">Début :</label>
+                            <input type="date" id="saisieDateDebut" name="saisieDateDebut" value="2025-07-28" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="saisieDateFin">Fin (opt.) :</label>
+                            <input type="date" id="saisieDateFin" name="saisieDateFin" value="2025-08-15">
+                        </div>
+                        <div class="button-group-horizontal">
+                            <button type="button" id="ajouterAbsenceBtn" class="btn btn-primary btn-block">Ajouter</button>
+                            <button type="button" id="retirerAbsenceBtn" class="btn btn-danger btn-block">Retirer</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="section" id="gestionDroitsSoldesSection">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h2 style="margin-bottom:0;">Gestion des Droits & Soldes</h2>
+                        <button id="afficherParamBtn" class="btn btn-sm btn-grey">Afficher Param.</button>
+                    </div>
+                    
+                    <h3>Soldes (période)</h3>
+                    <div class="table-wrapper">
+                        <table id="soldesPeriodeTable">
+                            <thead><tr><th>Type</th><th>Droits</th><th>Pris</th><th>Solde</th></tr></thead>
+                            <tbody>
+                                <!-- Lignes de soldes remplies par JS -->
+                                <tr><td colspan="4" style="text-align:center;">Chargement...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="leaveTypesConfigContentWrapper" class="toggle-content" style="display: none; margin-top:20px;">
+                        <h4>Paramétrage Types Congés</h4>
+                        <div class="table-wrapper">
+                            <table id="leaveTypesConfigTable">
+                                <thead><tr><th>Code</th><th>Libellé</th><th>Couleur</th><th>Droits/An</th><th>Actions</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <h5 style="margin-top: 15px; margin-bottom: 10px;">Ajouter / Modifier Type</h5>
+                        <form id="leaveTypeConfigForm">
+                            <input type="hidden" id="ltConfigIsEditing" value="">
+                            <div class="form-group"><label for="ltConfigCode">Code:</label><input type="text" id="ltConfigCode" maxlength="10" required></div>
+                            <div class="form-group"><label for="ltConfigLabel">Libellé:</label><input type="text" id="ltConfigLabel" required></div>
+                            <div class="form-group"><label for="ltConfigColor">Couleur:</label><input type="color" id="ltConfigColor" value="#cccccc"></div>
+                            <div class="form-group"><label for="ltConfigInitial">Droits/An:</label><input type="number" id="ltConfigInitial" value="0" min="0" step="0.5" required style="max-width:100px;"></div>
+                            <div class="button-group">
+                                <button type="submit" id="addUpdateLtConfigBtn" class="btn btn-success btn-sm">Sauvegarder Type</button>
+                                <button type="button" id="clearLtConfigFormBtn" class="btn btn-light btn-sm">Nouveau</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="section" id="observationsSection">
+                    <h3>Observations</h3>
+                    <textarea id="observationsTextarea" rows="3" placeholder="Saisissez vos observations ici..."></textarea>
+                </div>
+            </aside>
+
+        </div> <!-- Fin de .conges-layout-grid -->
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/export.js"></script> 
+    <script src="../js/auth.js"></script>
+    <!-- <script src="../js/app.js"></script> REMOVED app.js as it's not provided -->
+    <script src="../js/conges.js"></script>
+</body>
+</html>

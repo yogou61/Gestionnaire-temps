@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiches de Frais - Gestion de Temps</title>
+    <link rel="stylesheet" href="../css/styles.css">
+
+    <!-- Bibliothèques externes requises -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> <!-- Pour l'export Excel -->
+</head>
+<body class="has-fixed-header">
+    <header class="main-header">
+        <a href="dashboard.html" class="logo">GestionTemps</a>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Tableau de Bord</a></li>
+                <li><a href="pointage.html">Pointage</a></li>
+                <li><a href="conges.html">Congés</a></li>
+                <li><a href="fiches-frais.html" class="active">Fiches de Frais</a></li>
+                <li><a href="fiches-horaires.html">Fiches Horaires</a></li>
+                <li><a href="profil.html">Profil</a></li>
+                <li><a href="#" id="logoutBtn">Déconnexion</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1>Fiches de Frais pour Tournées</h1>
+
+        <div class="section new-expense-report-section"> <!-- Section pour créer une nouvelle fiche -->
+            <h2>Créer une fiche de tournée</h2>
+            <form id="expenseReportForm">
+                <div class="form-group">
+                    <label for="reportDate">Date de la tournée :</label>
+                    <input type="date" id="reportDate" name="reportDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="reportStartTime">Heure de début :</label>
+                    <input type="time" id="reportStartTime" name="reportStartTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="reportEndTime">Heure de fin :</label>
+                    <input type="time" id="reportEndTime" name="reportEndTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="reportLocations">Lieux visités (séparés par une virgule) :</label>
+                    <input type="text" id="reportLocations" name="reportLocations" placeholder="Ex: Client A, Client B, Siège" required>
+                </div>
+                <div class="form-group">
+                    <label for="reportMeals">Nombre de repas pris :</label>
+                    <input type="number" id="reportMeals" name="reportMeals" min="0" value="0" required style="max-width: 120px;"> <!-- Largeur ajustée -->
+                </div>
+                <button type="submit" class="btn btn-primary">Créer la fiche</button>
+            </form>
+        </div>
+
+        <div class="section expense-reports-history-section"> <!-- Section pour l'historique -->
+            <h2>Historique des fiches de frais</h2>
+            <div class="table-wrapper">
+                <table id="expenseReportsTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Heure Début</th>
+                            <th>Heure Fin</th>
+                            <th>Lieux Visitées</th>
+                            <th>Repas</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Les fiches de frais seront injectées ici par JS -->
+                        <tr><td colspan="6" style="text-align: center;">Aucune fiche de frais pour le moment.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="button-group mt-2" style="justify-content: flex-end;"> <!-- mt-2 pour un peu d'espace au-dessus -->
+                <button type="button" id="resetExpensesBtn" class="btn btn-warning" style="margin-right: auto;">Réinitialiser l'Historique</button>
+                <button type="button" id="exportExcelExpensesBtn" class="btn btn-success">Exporter en Excel</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast-container"></div> <!-- Conteneur pour les notifications toast -->
+
+    <!-- Scripts JS de l'application - L'ordre est important -->
+    <script src="../js/utils.js"></script>    <!-- Fonctions utilitaires, y compris showToast -->
+    <script src="../js/export.js"></script>   <!-- Fonctions d'export, y compris exportToExcel -->
+    <script src="../js/auth.js"></script>     <!-- Logique d'authentification et déconnexion -->
+    <script src="../js/app.js"></script>      <!-- Logique globale de l'application (ex: nav active) -->
+    <script src="../js/fiches-frais.js"></script> <!-- Logique spécifique à cette page -->
+
+</body>
+</html>
