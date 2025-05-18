@@ -1,5 +1,5 @@
 /* app/css/styles.css - Version V80 - Boutons Pointage et Styles Ajoutés */
-/* MODIFIED: Congés styles adjusted for layout/overlap fix */
+/* MODIFIED: Congés styles adjusted for compact calendar display */
 
 /* --- Variables CSS Globales --- */
 :root {
@@ -24,7 +24,7 @@
     --font-size-xs: 0.7em;  
     --line-height-base: 1.6;
     --header-height: 60px;
-    --container-max-width: 1200px; 
+    --container-max-width: 1350px; /* Slightly wider to accommodate more compact calendar */
     --spacing-unit: 8px;
     --text-on-primary: #ffffff;
     --text-on-secondary: #ffffff;
@@ -43,8 +43,8 @@
 html { scroll-behavior: smooth; font-size: var(--font-size-base); }
 body { font-family: var(--font-family-sans-serif); margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); line-height: var(--line-height-base); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 * { box-sizing: border-box; }
-.container { max-width: var(--container-max-width); margin-left: auto; margin-right: auto; padding-left: calc(var(--spacing-unit) * 2); padding-right: calc(var(--spacing-unit) * 2); }
-main { padding-top: calc(var(--spacing-unit) * 3); padding-bottom: calc(var(--spacing-unit) * 2); }
+.container { max-width: var(--container-max-width); margin-left: auto; margin-right: auto; padding-left: calc(var(--spacing-unit) * 1.5); padding-right: calc(var(--spacing-unit) * 1.5); } /* Reduced padding for more space */
+main { padding-top: calc(var(--spacing-unit) * 2); padding-bottom: calc(var(--spacing-unit) * 2); }
 body.has-fixed-header { padding-top: var(--header-height); }
 
 /* --- Header Principal --- */
@@ -193,7 +193,7 @@ td.time-cell-single { min-width: 45px; width: 45px; font-weight: bold; }
 .timesheet-footer .signature-text-label { text-align: left; border: none !important; padding: 0; margin:0; min-height: 1.5em; margin-left: calc(var(--spacing-unit) * 2); }
 
 /* --- ============================================= --- */
-/* --- STYLES SPÉCIFIQUES POUR LA PAGE CONGÉS (V_ImageMatch) --- */
+/* --- STYLES SPÉCIFIQUES POUR LA PAGE CONGÉS (V_ImageMatch - Compact Calendar) --- */
 /* --- ============================================= --- */
 
 .btn-block { display: block; width: 100%; margin-top: calc(var(--spacing-unit)*0.75); margin-bottom: calc(var(--spacing-unit)*0.75); } 
@@ -214,117 +214,126 @@ td.time-cell-single { min-width: 45px; width: 45px; font-weight: bold; }
 
 .conges-layout-grid {
     display: grid;
-    /* Adjusted for better stability, sidebars fixed, middle flexible */
-    grid-template-columns: 270px 1fr 290px; 
-    gap: calc(var(--spacing-unit) * 1.5); /* Slightly reduced gap */
+    grid-template-columns: 250px 1fr 270px; /* Adjusted for potentially narrower sidebars */
+    gap: calc(var(--spacing-unit) * 1.25); 
     align-items: start; 
 }
 
 .conges-sidebar-left, .conges-sidebar-right {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--spacing-unit) * 1.5); /* Reduced gap for tighter sidebar sections */
-    position: relative; /* For z-index stacking context */
-    z-index: 10;        /* Ensure sidebars are above calendar if overlap occurs */
+    gap: calc(var(--spacing-unit) * 1.25); 
+    position: relative; 
+    z-index: 10;        
 }
 .conges-sidebar-left .section, .conges-sidebar-right .section {
     margin-bottom: 0; 
-    padding: calc(var(--spacing-unit) * 1.75); 
+    padding: calc(var(--spacing-unit) * 1.5); /* Reduced padding in sidebar sections */
 }
 .conges-sidebar-left .section h2, .conges-sidebar-right .section h2,
 .conges-sidebar-left .section h3, .conges-sidebar-right .section h3 {
-    font-size: 1.05em; 
-    margin-bottom: var(--spacing-unit);
-    padding-bottom: calc(var(--spacing-unit)*0.5);
+    font-size: 1em; /* Smaller titles for sidebar sections */
+    margin-bottom: calc(var(--spacing-unit)*0.75);
+    padding-bottom: calc(var(--spacing-unit)*0.4);
     border-bottom: 1px solid var(--border-color-light);
 }
 .conges-sidebar-left .section h3, .conges-sidebar-right .section h3 { 
-    font-size: 0.95em;
+    font-size: 0.9em;
     color: var(--text-color-light);
     border-bottom: none;
-    margin-top: var(--spacing-unit);
+    margin-top: calc(var(--spacing-unit)*0.75);
 }
 
-.conges-main-calendar.section { /* The middle column containing the annual calendar */
-    position: relative; /* Establish stacking context */
-    z-index: 5;         /* Lower z-index than sidebars */
-    overflow: hidden;   /* ADDED: Prevent internal calendar content from visually overflowing */
+.conges-main-calendar.section { 
+    position: relative; 
+    z-index: 5;         
+    overflow: hidden;   
+    padding: calc(var(--spacing-unit) * 1); /* Reduced padding for main calendar area */
 }
 
 .calendar-view-title { 
-    font-size: 1.6em; 
+    font-size: 1.4em; /* Slightly smaller main calendar title */
     color: var(--primary-color);
     text-align: center;
     margin-top: 0;
-    margin-bottom: calc(var(--spacing-unit) * 1.5);
-    padding-bottom: calc(var(--spacing-unit)*0.75);
+    margin-bottom: var(--spacing-unit); /* Reduced margin */
+    padding-bottom: calc(var(--spacing-unit)*0.5);
     border-bottom: 1px solid var(--border-color);
 }
 
-#controlesSauvegardeSection #controleAnneeDebut { padding: calc(var(--spacing-unit)*0.7); font-size: 0.9em; height: 36px; }
-#controlesSauvegardeSection #periodeAffichee { font-weight: bold; color: var(--text-color); font-size: 0.95em; padding-left: var(--spacing-unit); }
-#controlesSauvegardeSection .form-group label { font-size: 0.9em; }
+#controlesSauvegardeSection #controleAnneeDebut { padding: calc(var(--spacing-unit)*0.6); font-size: 0.85em; height: 32px; }
+#controlesSauvegardeSection #periodeAffichee { font-weight: bold; color: var(--text-color); font-size: 0.9em; padding-left: calc(var(--spacing-unit)*0.5); }
+#controlesSauvegardeSection .form-group label { font-size: 0.85em; }
 
-.legend-section #congesLegendContainer { display: flex; flex-direction: column; gap: calc(var(--spacing-unit) * 0.6); }
-.legend-item { display: flex; align-items: center; font-size: 0.85em; color: var(--text-color); }
-.legend-color-box { width: 13px; height: 13px; border: 1px solid #bbb; margin-right: calc(var(--spacing-unit) * 0.75); display: inline-block; border-radius: 2px; flex-shrink: 0; }
+.legend-section #congesLegendContainer { display: flex; flex-direction: column; gap: calc(var(--spacing-unit) * 0.4); }
+.legend-item { display: flex; align-items: center; font-size: 0.8em; color: var(--text-color); }
+.legend-color-box { width: 11px; height: 11px; border: 1px solid #bbb; margin-right: calc(var(--spacing-unit) * 0.6); display: inline-block; border-radius: 2px; flex-shrink: 0; }
 .legend-color-box.color-weekend { background-color: #f0f0f0; border-color: #e0e0e0; } 
 .legend-color-box.color-holiday { background-color: #fffacd; border-color: #ffe37a; }
 .legend-color-box.color-pending { border: 1px dashed var(--warning-color) !important; opacity: 0.7; }
 
-#saisieAbsencesSection input[type="date"], #saisieAbsencesSection select { font-size: 0.9em; padding: calc(var(--spacing-unit)*0.7); height: 36px; }
-#saisieAbsencesSection .form-group label { font-size: 0.9em; }
+#saisieAbsencesSection input[type="date"], #saisieAbsencesSection select { font-size: 0.85em; padding: calc(var(--spacing-unit)*0.6); height: 32px; }
+#saisieAbsencesSection .form-group label { font-size: 0.85em; }
+#saisieAbsencesSection .btn { padding: calc(var(--spacing-unit)*0.7) calc(var(--spacing-unit) * 1.2); font-size: 0.85em;}
 
-#soldesPeriodeTable { width: 100%; border-collapse: collapse; font-size: 0.85em; }
-#soldesPeriodeTable th, #soldesPeriodeTable td { border: 1px solid var(--border-color); padding: calc(var(--spacing-unit) * 0.6) var(--spacing-unit); text-align: left; }
+
+#soldesPeriodeTable { width: 100%; border-collapse: collapse; font-size: 0.8em; }
+#soldesPeriodeTable th, #soldesPeriodeTable td { border: 1px solid var(--border-color); padding: calc(var(--spacing-unit) * 0.5) calc(var(--spacing-unit)*0.75); text-align: left; }
 #soldesPeriodeTable th { background-color: #f0f2f5; font-weight: bold; white-space: nowrap; color: var(--text-color); }
 #soldesPeriodeTable th:nth-child(2), #soldesPeriodeTable td:nth-child(2),
 #soldesPeriodeTable th:nth-child(3), #soldesPeriodeTable td:nth-child(3),
 #soldesPeriodeTable th:nth-child(4), #soldesPeriodeTable td:nth-child(4) { text-align: center; }
 
-#leaveTypesConfigContentWrapper { border-top: 1px solid var(--border-color); padding-top: var(--spacing-unit); }
-#leaveTypesConfigContentWrapper h4 { font-size: 1em; color: var(--primary-color); margin-bottom: var(--spacing-unit); border-bottom: none; }
-#leaveTypesConfigContentWrapper h5 { font-size: 0.9em; color: var(--text-color-light); margin-bottom: calc(var(--spacing-unit)*0.5); }
-#leaveTypesConfigTable { width: 100%; font-size: var(--font-size-xs); } 
-#leaveTypesConfigTable th, #leaveTypesConfigTable td { padding: calc(var(--spacing-unit)*0.5); }
-#leaveTypeConfigForm .form-group label { font-size: var(--font-size-xs); }
-#leaveTypeConfigForm input, #leaveTypeConfigForm select { font-size: var(--font-size-xs); padding: calc(var(--spacing-unit)*0.5); }
-#leaveTypeConfigForm input[type="color"] { padding: 2px; height: 28px; }
+#leaveTypesConfigContentWrapper { border-top: 1px solid var(--border-color); padding-top: calc(var(--spacing-unit)*0.75); }
+#leaveTypesConfigContentWrapper h4 { font-size: 0.95em; color: var(--primary-color); margin-bottom: calc(var(--spacing-unit)*0.75); border-bottom: none; }
+#leaveTypesConfigContentWrapper h5 { font-size: 0.85em; color: var(--text-color-light); margin-bottom: calc(var(--spacing-unit)*0.4); }
+#leaveTypesConfigTable { width: 100%; font-size: calc(var(--font-size-xs) * 0.9); } /* Even smaller */
+#leaveTypesConfigTable th, #leaveTypesConfigTable td { padding: calc(var(--spacing-unit)*0.4); }
+#leaveTypeConfigForm .form-group label { font-size: calc(var(--font-size-xs)*0.9); }
+#leaveTypeConfigForm input, #leaveTypeConfigForm select { font-size: calc(var(--font-size-xs)*0.9); padding: calc(var(--spacing-unit)*0.4); }
+#leaveTypeConfigForm input[type="color"] { padding: 1px; height: 24px; }
+#leaveTypeConfigForm .btn-sm {padding: calc(var(--spacing-unit)*0.5) var(--spacing-unit); font-size: 0.8em; }
+
 
 .annual-calendar-placeholder {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); 
-    gap: calc(var(--spacing-unit) * 1.25);
-    padding: calc(var(--spacing-unit) * 0.5); 
+    /* Trying 6 columns, will make months very narrow. Adjust based on actual screen. */
+    /* Fallback to 4 if 6 is too much, or use auto-fit for responsiveness */
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* More responsive month columns */
+    /* grid-template-columns: repeat(6, 1fr); */
+    gap: calc(var(--spacing-unit) * 0.5); /* Reduced gap */
+    padding: 0; 
     background-color: transparent; 
     border-radius: var(--border-radius-sm);
-    /* overflow: hidden; This was on .conges-main-calendar.section, which is better */
 }
 .mini-month-placeholder {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color); 
     border-radius: var(--border-radius-sm);
-    padding: calc(var(--spacing-unit)*0.75);
+    padding: calc(var(--spacing-unit)*0.5); /* Reduced padding */
     box-shadow: none; 
-    min-width: 0; /* Helps grid item obey its column width if content is too wide */
-    overflow: hidden; /* Prevent internal table from breaking out of month placeholder visually */
+    min-width: 0; 
+    overflow: hidden; 
 }
 .mini-month-placeholder h4 { 
     text-align: center;
-    margin: 0 0 calc(var(--spacing-unit)*0.75) 0;
-    font-size: 0.9em; 
+    margin: 0 0 calc(var(--spacing-unit)*0.4) 0; /* Reduced margin */
+    font-size: 0.8em; /* Smaller month title */
     font-weight: 500; 
     color: var(--text-color);
+    white-space: nowrap; /* Prevent wrapping if month name is long */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .mini-month-placeholder table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.75em; /* Adjusted for smaller day cells */
-    table-layout: fixed; /* Ensures equal distribution of width among day columns */
+    font-size: 0.65em; /* VERY small font for day numbers */
+    table-layout: fixed; 
 }
 .mini-month-placeholder th { 
     text-align: center;
-    padding: calc(var(--spacing-unit)*0.2) 0; 
+    padding: calc(var(--spacing-unit)*0.1) 0; /* Minimal padding */
     font-weight: normal;
     color: var(--text-color-light);
 }
@@ -333,25 +342,27 @@ td.time-cell-single { min-width: 45px; width: 45px; font-weight: bold; }
     vertical-align: middle;
     border: none; 
     padding: 0; 
-    height: 24px; 
+    height: 18px; /* Reduced height */
 }
 .mini-day-cell {
-    width: 100%; /* Fill its table cell (td) */
-    height: 100%; /* Fill its table cell (td) */
-    border-radius: 3px;
+    width: 100%; 
+    height: 100%; 
+    line-height: 18px; /* Match height */
+    border-radius: 2px; /* Smaller radius */
     cursor: default;
     display: flex; 
     align-items: center;
     justify-content: center;
     color: var(--text-color);
     position: relative;
+    font-size: 0.9em; /* Relative to table font-size (0.65em) */
 }
 .mini-day-cell.other-month { color: #d0d0d0; background-color: transparent !important; font-weight: normal; }
 .mini-day-cell.weekend { background-color: #f0f0f0; color: #999; }
 .mini-day-cell.holiday { background-color: #fffacd; font-weight: 500; color: #8B4513; }
 .mini-day-cell.holiday.weekend { background-color: #fffacd; color: #8B4513; }
 .mini-day-cell[style*="background-color"] { font-weight: 500; }
-.mini-day-cell[style*="border-style: dashed"] { box-shadow: inset 0 0 0 1.5px currentColor; }
+.mini-day-cell[style*="border-style: dashed"] { box-shadow: inset 0 0 0 1px currentColor; /* Thinner border for pending */ }
 
 /* --- Ajustement pour l'impression (Original V80 + Congés) --- */
 @media print { 
@@ -386,15 +397,15 @@ td.time-cell-single { min-width: 45px; width: 45px; font-weight: bold; }
     main.container { max-width: 100% !important; padding: 5mm !important; margin: 0 !important; }
     .conges-layout-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
     .conges-layout-grid .section { box-shadow: none !important; border: none !important; padding: 0 !important; margin-bottom: 10px !important; }
-    .conges-layout-grid .conges-main-calendar.section { border: none !important; padding: 0 !important; overflow: visible !important; /* Allow it to show fully in print */ }
+    .conges-layout-grid .conges-main-calendar.section { border: none !important; padding: 0 !important; overflow: visible !important; }
     .calendar-view-title { font-size: 14pt !important; border-bottom: 1px solid #333 !important; margin-bottom: 10px !important; padding-bottom: 5px !important; text-align: left !important; }
-    .annual-calendar-placeholder { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; padding: 0 !important; overflow: visible !important; }
-    .mini-month-placeholder { padding: 5px !important; border: 1px solid #ccc !important; page-break-inside: avoid !important; overflow: visible !important;}
-    .mini-month-placeholder h4 { font-size: 10pt !important; margin-bottom: 5px !important; }
-    .mini-month-placeholder table { font-size: 7pt !important; }
+    .annual-calendar-placeholder { grid-template-columns: repeat(4, 1fr) !important; /* For print, 4 months per row is usually good */ gap: 5px !important; padding: 0 !important; overflow: visible !important; }
+    .mini-month-placeholder { padding: 4px !important; border: 1px solid #ccc !important; page-break-inside: avoid !important; overflow: visible !important;}
+    .mini-month-placeholder h4 { font-size: 9pt !important; margin-bottom: 3px !important; }
+    .mini-month-placeholder table { font-size: 6pt !important; }
     .mini-month-placeholder th { padding: 1px 0 !important; }
-    .mini-month-placeholder td { height: 20px !important; }
-    .mini-day-cell { width: 100% !important; height: 100% !important; font-size: 0.95em !important; border-radius: 2px !important; }
+    .mini-month-placeholder td { height: 16px !important; }
+    .mini-day-cell { width: 100% !important; height: 100% !important; font-size: 0.95em !important; border-radius: 1px !important; line-height: 16px;}
     .mini-day-cell { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .mini-day-cell.weekend { background-color: #e8e8e8 !important; }
     .mini-day-cell.holiday { background-color: #fff0b3 !important; } 
