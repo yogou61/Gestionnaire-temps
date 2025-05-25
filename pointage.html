@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pointage Journalier - Gestion Temps</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+</head>
+<body class="has-fixed-header">
+    <header class="main-header">
+        <a href="dashboard.html" class="logo">GestionTemps</a>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Tableau de Bord</a></li>
+                <li><a href="pointage.html" class="active">Pointage</a></li>
+                <li><a href="conges.html">Congés</a></li>
+                <li><a href="fiches-frais.html">Fiches de Frais</a></li>
+                <li><a href="fiches-horaires.html">Fiches Horaires</a></li>
+                <li><a href="profil.html">Profil</a></li>
+                <li><a href="#" id="logoutBtn">Déconnexion</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1>Pointage Journalier</h1>
+        
+        <div class="section">
+            <h2>Statut Actuel</h2>
+            <p>Date : <strong id="currentDateDisplay">--</strong></p>
+            <p>Heure : <strong id="currentTimeDisplay">--:--:--</strong></p>
+        </div>
+
+        <div class="section">
+            <h2>Actions de Pointage</h2>
+            <div class="form-inline-flex pointage-actions">
+                <div class="form-group">
+                    <label>Début Journée :</label>
+                    <strong id="morningStartTimeDisplay">--:--</strong>
+                    <button type="button" id="btnStartMorning" class="btn btn-primary">Pointer Début Journée</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>Fin Journée :</label>
+                    <strong id="afternoonEndTimeDisplay">--:--</strong>
+                    <button type="button" id="btnEndAfternoon" class="btn btn-primary">Pointer Fin Journée</button>
+                </div>
+            </div>
+            
+            <div class="import-export-controls">
+                <h3>Sauvegarde et Restauration</h3>
+                <div class="form-inline-flex">
+                    <button type="button" id="exportJsonBtn" class="btn btn-secondary">Exporter Pointages (JSON)</button>
+                    <div class="import-wrapper">
+                        <input type="file" id="importJsonInput" accept=".json" style="display:none;">
+                        <button type="button" id="importJsonBtn" class="btn btn-secondary">Importer Pointages</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Résumé de la Journée et Semaine</h2>
+            <p>Temps écoulé aujourd'hui : <strong id="elapsedTimeToday">00:00</strong></p>
+            <p>Temps total pointé cette semaine : <strong id="weekSummary">00:00</strong></p>
+        </div>
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/pointage.js"></script>
+</body>
+</html>
