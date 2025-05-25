@@ -1,557 +1,550 @@
-// app/js/pointage.js (Version V17 - Avec fonctionnalités d'import/export JSON - Correction)
-document.addEventListener('DOMContentLoaded', async () => {
-    // Identifier si on est bien sur la page de pointage
+// app/js/pointage.js (Version V18 - Complet avec liaison fiches horaires)
+
+let pointageInitialized = false;
+
+function attemptInitializePointageModule() {
+    if (window.appUtilsReadyState === 'ready') {
+        console.log('[Pointage] AppUtils est déjà prêt. Initialisation immédiate.');
+        initializePointageModule();
+    } else {
+        console.log('[Pointage] AppUtils pas encore prêt. Attente de l\'événement appUtilsReady.');
+        document.addEventListener('appUtilsReady', initializePointageModuleOnce);
+    }
+}
+
+function initializePointageModuleOnce() {
+    if (pointageInitialized) return;
+    pointageInitialized = true;
+    document.removeEventListener('appUtilsReady', initializePointageModuleOnce);
+    console.log('[Pointage] Événement appUtilsReady reçu. Initialisation du module.');
+    initializePointageModule();
+}
+
+async function initializePointageModule() {
+    // Vérification de la page
     const pointagePageIdentifier = document.getElementById('btnStartMorning');
     if (!pointagePageIdentifier) {
-        console.log('Pas sur la page de pointage, module non activé.');
-        return; // Ne pas exécuter ce script si l'élément n'existe pas
+        return; 
     }
-    console.log('Module Pointage (Simplifié V17) chargé et initialisé.');
+    console.log('[Pointage] Module Pointage V18 - Initialisation en cours.');
 
-    // Vérifier les dépendances critiques (utils.js, localforage, showToast)
-    if (typeof localforage === 'undefined' || typeof formatDuration !== 'function' ||
-        typeof getISODate !== 'function' || typeof getWeekRange !== 'function' ||
-        typeof showToast !== 'function') {
-        console.error("Dépendances manquantes (localforage, utils.js ou showToast).");
-        // Afficher un message d'erreur visible si showToast est disponible
-        if (typeof showToast === 'function') showToast("Erreur critique de l'application: dépendances manquantes.", "error", 10000);
-        // Tenter d'afficher l'erreur dans un élément si possible
-        const statusElement = document.getElementById('morningStartTimeDisplay');
-        if (statusElement) statusElement.textContent = "Erreur critique.";
-        return; // Arrêter l'exécution si les dépendances sont manquantes
+    // Vérification des dépendances
+    if (typeof localforage === 'undefined' || 
+        typeof window.AppUtils === 'undefined' ||
+        typeof AppUtils.formatDuration !== 'function' ||
+        typeof AppUtils.getISODate !== 'function' ||
+        typeof AppUtils.getWeekRange !== 'function' ||
+        typeof AppUtils.showToast !== 'function') {
+        console.error("[Pointage] Dépendances manquantes.");
+        return;
     }
+    console.log('[Pointage] Dépendances vérifiées.');
 
-    // Éléments DOM
+    // === CONSTANTES ===
+    const PUNCH_HISTORY_KEY = 'punchHistory_v5_simple_dayOnly';
+    const CURRENT_DAY_STATE_KEY = 'currentDayState_v4';
+
+    // === ÉLÉMENTS DOM ===
     const currentDateEl = document.getElementById('currentDateDisplay');
     const currentTimeEl = document.getElementById('currentTimeDisplay');
-    const btnStartDay = document.getElementById('btnStartMorning');
-    const btnEndDay = document.getElementById('btnEndAfternoon'); // Reste le même ID
-    const dayStartTimeDispEl = document.getElementById('morningStartTimeDisplay'); // Reste le même ID
-    const dayEndTimeDispEl = document.getElementById('afternoonEndTimeDisplay'); // Reste le même ID
-    const elapsedTimeTodayEl = document.getElementById('elapsedTimeToday');
-    const weekSummaryEl = document.getElementById('weekSummary');
-    
-    // Éléments pour import/export JSON
+    const btnStartMorning = document.getElementById('btnStartMorning');
+    const btnEndAfternoon = document.getElementById('btnEndAfternoon');
+    const morningStartTimeDisplay = document.getElementById('morningStartTimeDisplay');
+    const afternoonEndTimeDisplay = document.getElementById('afternoonEndTimeDisplay');
+    const elapsedTimeToday = document.getElementById('elapsedTimeToday');
+    const weekSummary = document.getElementById('weekSummary');
     const exportJsonBtn = document.getElementById('exportJsonBtn');
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
     const importJsonBtn = document.getElementById('importJsonBtn');
     const importJsonInput = document.getElementById('importJsonInput');
 
-    // Variables de fonctionnement
-    let timerInterval = null;
-    // L'état du jour local ne stocke PLUS les pauses
+    // Vérifications DOM avec logs détaillés
+    console.log('[Pointage] Vérification des éléments DOM:');
+    console.log('- btnStartMorning:', !!btnStartMorning);
+    console.log('- btnEndAfternoon:', !!btnEndAfternoon);
+    console.log('- elapsedTimeToday:', !!elapsedTimeToday);
+    console.log('- weekSummary:', !!weekSummary);
+    console.log('- sendEmailBtn:', !!sendEmailBtn);
+    
+    const requiredElements = [
+        { element: btnStartMorning, name: 'btnStartMorning' },
+        { element: btnEndAfternoon, name: 'btnEndAfternoon' }
+    ];
+    
+    const missingElements = requiredElements.filter(item => !item.element);
+    if (missingElements.length > 0) {
+        console.error("[Pointage] Éléments DOM manquants:", missingElements.map(item => item.name));
+        AppUtils.showToast(`Erreur: éléments manquants (${missingElements.map(item => item.name).join(', ')})`, "error");
+        return;
+    }
+
+    // === VARIABLES D'ÉTAT ===
     let currentDayState = {
-        date: null,
+        date: AppUtils.getISODate(new Date()),
         dayStart: null,
-        dayEnd: null
+        dayEnd: null,
+        status: 'not_started' // not_started, day_active, day_finished
     };
-    // La clé d'historique est mise à jour pour refléter le format simplifié et éviter les conflits
-    const PUNCH_HISTORY_KEY = 'punchHistory_v5_simple_dayOnly'; // Nouvelle clé
-    const CURRENT_DAY_STATE_KEY = 'currentDayState_v5_simple_dayOnly'; // Nouvelle clé
 
-    function getDefaultDayState(dateISO) {
-        return {
-            date: dateISO,
-            dayStart: null,
-            dayEnd: null
-        };
+    let updateInterval = null;
+
+    // === FONCTIONS UTILITAIRES ===
+    function parseTimeString(timeStr) {
+        if (!timeStr) return null;
+        const date = new Date(timeStr);
+        return isNaN(date.getTime()) ? null : date;
     }
 
-    async function initializeOrLoadDayState() {
-        const today = getISODate(new Date());
-        try {
-            // Charger l'état local du jour (pour les boutons et l'affichage 'aujourd'hui')
-            const savedState = await localforage.getItem(CURRENT_DAY_STATE_KEY);
-
-            if (savedState && savedState.date === today) {
-                 currentDayState = savedState;
-            } else {
-                 // Si pas d'état sauvé pour aujourd'hui, ou si l'état est ancien
-                 // On vérifie si un punch "dayEnd" a été enregistré pour aujourd'hui dans l'historique global
-                 // Cela couvre le cas où l'utilisateur a fermé/rouvert l'app après avoir fini la journée
-                 const history = await localforage.getItem(PUNCH_HISTORY_KEY) || [];
-                 const todayRecord = history.find(record => record.date === today);
-
-                 if (todayRecord && todayRecord.dayEnd) {
-                     // La journée est déjà terminée selon l'historique
-                     currentDayState = {
-                         date: today,
-                         dayStart: todayRecord.dayStart,
-                         dayEnd: todayRecord.dayEnd
-                     };
-                 } else if (todayRecord && todayRecord.dayStart) {
-                     // La journée a commencé mais n'est pas finie selon l'historique
-                      currentDayState = {
-                         date: today,
-                         dayStart: todayRecord.dayStart,
-                         dayEnd: null // S'assurer que dayEnd est null si pas dans l'historique
-                     };
-                 }
-                 else {
-                    // Pas d'état local ni d'historique pour aujourd'hui
-                    currentDayState = getDefaultDayState(today);
-                 }
-                 // On sauvegarde l'état initial de la journée une fois déterminé
-                 await saveCurrentDayState();
-            }
-
-            updateUIBasedOnState();
-            console.log("État du jour chargé:", JSON.parse(JSON.stringify(currentDayState)));
-
-        } catch (err) {
-            console.error("Erreur chargement état journée:", err);
-            // Si une erreur survient, on initialise à l'état par défaut pour aujourd'hui
-            currentDayState = getDefaultDayState(today);
-             if(typeof showToast === 'function') showToast("Erreur chargement état pointage.", "error");
-        }
+    function formatTimeForDisplay(timeStr) {
+        const date = parseTimeString(timeStr);
+        if (!date) return '--:--';
+        return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     }
 
+    function calculateDuration(startTime, endTime) {
+        const start = parseTimeString(startTime);
+        const end = parseTimeString(endTime);
+        if (!start || !end) return 0;
+        return Math.max(0, end.getTime() - start.getTime());
+    }
+
+    function getCurrentTimestamp() {
+        return new Date().toISOString();
+    }
+
+    // === FONCTIONS DE SAUVEGARDE ===
     async function saveCurrentDayState() {
         try {
             await localforage.setItem(CURRENT_DAY_STATE_KEY, currentDayState);
-             console.log("État du jour sauvegardé localement:", JSON.parse(JSON.stringify(currentDayState)));
+            console.log('[Pointage] État du jour sauvegardé.');
         } catch (err) {
-            console.error("Erreur sauvegarde état journée locale:", err);
-             if(typeof showToast === 'function') showToast("Erreur sauvegarde état pointage local.", "error");
+            console.error('[Pointage] Erreur sauvegarde état:', err);
         }
     }
 
-    // Calculer la durée écoulée ou totale de la journée
-    function calculateDurationsAndTimes(state) {
-        if (!state || !state.date) return { elapsedTimeMs: 0, formattedElapsed: '00:00', isActive: false };
-
-        let now = new Date();
-        // Ensure date objects are created from ISO strings
-        const dayStartDate = state.dayStart ? new Date(state.dayStart) : null;
-        const dayEndDate = state.dayEnd ? new Date(state.dayEnd) : null;
-
-        let elapsedTimeMs = 0;
-        let isActive = false;
-
-        // Si la journée est commencée mais pas terminée
-        if (dayStartDate && !dayEndDate) {
-            elapsedTimeMs = now.getTime() - dayStartDate.getTime();
-            isActive = true;
-        }
-        // Si la journée est terminée
-        else if (dayStartDate && dayEndDate) {
-            elapsedTimeMs = dayEndDate.getTime() - dayStartDate.getTime();
-        }
-
-        // Garantir que le temps écoulé n'est jamais négatif
-        elapsedTimeMs = Math.max(0, elapsedTimeMs);
-
-        return {
-            elapsedTimeMs,
-            formattedElapsed: formatDuration(elapsedTimeMs),
-            isActive
-        };
-    }
-
-    // Mettre à jour l'interface utilisateur
-    function updateUIBasedOnState() {
-        const today = getISODate(new Date());
-         // S'assurer que l'état affiché est bien celui d'aujourd'hui
-        if (!currentDayState || currentDayState.date !== today) {
-             // Si l'état ne correspond pas à aujourd'hui, afficher des valeurs par défaut
-            dayStartTimeDispEl.textContent = '--:--';
-            dayEndTimeDispEl.textContent = '--:--';
-            btnStartDay.disabled = false;
-            btnEndDay.disabled = true;
-            elapsedTimeTodayEl.textContent = '00:00';
-             // Arrêter le timer s'il y en a un
-             if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-            return; // Sortir si l'état n'est pas pour aujourd'hui
-        }
-
-
-        // Mettre à jour les affichages des heures de pointage
-        dayStartTimeDispEl.textContent = currentDayState.dayStart
-            ? new Date(currentDayState.dayStart).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})
-            : '--:--';
-
-        dayEndTimeDispEl.textContent = currentDayState.dayEnd
-            ? new Date(currentDayState.dayEnd).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})
-            : '--:--';
-
-        // Activer/désactiver les boutons selon l'état
-        // Le bouton "Début Journée" est désactivé si dayStart existe
-        btnStartDay.disabled = !!currentDayState.dayStart;
-        // Le bouton "Fin Journée" est désactivé si dayStart n'existe PAS ou si dayEnd existe
-        btnEndDay.disabled = !currentDayState.dayStart || !!currentDayState.dayEnd;
-
-        // Calculer et afficher le temps écoulé
-        const { formattedElapsed, isActive } = calculateDurationsAndTimes(currentDayState);
-        elapsedTimeTodayEl.textContent = formattedElapsed;
-
-        // Si actif, définir un intervalle pour mettre à jour le temps écoulé
-        // Vérifier si on est bien sur le jour en cours avant de lancer le timer
-        if (isActive && !timerInterval && currentDayState.date === today) {
-            timerInterval = setInterval(() => {
-                const { formattedElapsed } = calculateDurationsAndTimes(currentDayState);
-                elapsedTimeTodayEl.textContent = formattedElapsed;
-            }, 30000); // Mise à jour chaque 30 secondes
-        } else if (!isActive && timerInterval) {
-            // Si plus actif ou si le jour a changé, arrêter le timer
-            clearInterval(timerInterval);
-            timerInterval = null;
-        }
-    }
-
-    // Gérer un punch (début ou fin de journée)
-    async function punch(type) {
-        const today = getISODate(new Date());
-        // S'assurer qu'on pointe bien pour aujourd'hui
-        if (!currentDayState || currentDayState.date !== today) {
-            console.warn("Tentative de pointage pour un jour différent ou état invalide.");
-             if(typeof showToast === 'function') showToast("Erreur: Impossible de pointer pour un jour différent.", "warning");
-            await initializeOrLoadDayState(); // Tenter de recharger l'état correct
-            return;
-        }
-
-        const now = new Date();
-        let message = "";
-
+    async function saveToPunchHistory() {
         try {
-            if (type === 'dayStart') {
-                if (currentDayState.dayStart) {
-                     if(typeof showToast === 'function') showToast("Journée déjà commencée.", "info");
-                    return; // Empêcher double pointage
-                }
-                currentDayState.dayStart = now.toISOString();
-                message = "Début de journée enregistré";
-            } else if (type === 'dayEnd') {
-                if (!currentDayState.dayStart) {
-                     if(typeof showToast === 'function') showToast("Veuillez pointer le début de journée d'abord.", "warning");
-                    return; // Ne peut pas finir si pas commencé
-                }
-                 if (currentDayState.dayEnd) {
-                     if(typeof showToast === 'function') showToast("Journée déjà terminée.", "info");
-                    return; // Empêcher double pointage
-                }
-                currentDayState.dayEnd = now.toISOString();
-                message = "Fin de journée enregistrée";
-                // Finaliser et sauvegarder dans l'historique global APRÈS avoir mis à jour l'état local
-                 await finalizeDayAndSaveToHistory(currentDayState); // Passer l'état actuel
-            }
-
-            await saveCurrentDayState(); // Sauvegarder l'état local (dayStart/dayEnd pour aujourd'hui)
-            updateUIBasedOnState(); // Mettre à jour l'UI en fonction de l'état local
-
-             if(typeof showToast === 'function') showToast(message, "success");
-
-        } catch (err) {
-            console.error(`Erreur pointage (${type}):`, err);
-            if(typeof showToast === 'function') showToast(`Erreur pointage ${type}`, "error");
-        }
-    }
-
-     // Finaliser et sauvegarder l'enregistrement du jour dans l'historique global
-    async function finalizeDayAndSaveToHistory(dayStateToSave) {
-        if (!dayStateToSave || !dayStateToSave.dayStart || !dayStateToSave.dayEnd) {
-            console.error("Tentative de finalisation sans début ou fin de journée.");
-            return;
-        }
-
-        const { dayStart, dayEnd, date } = dayStateToSave;
-        let totalWorkMs = 0;
-
-         // Calculate total duration only if both start and end exist and are valid
-        try {
-             const start = new Date(dayStart);
-             const end = new Date(dayEnd);
-             if (end > start) {
-                 totalWorkMs = end.getTime() - start.getTime();
-             }
-        } catch (e) {
-             console.error("Erreur calcul durée finalisée:", e);
-             totalWorkMs = 0;
-        }
-
-
-        const dayRecord = {
-            date: date, // Utiliser la date de l'état, pas 'today' (même si c'est censé être aujourd'hui)
-            dayStart: dayStart,
-            dayEnd: dayEnd,
-            totalWorkMs: Math.max(0, totalWorkMs) // Store calculated total work
-             // Observations are now ONLY in detailed timesheet data, not here
-        };
-
-        try {
-            let history = await localforage.getItem(PUNCH_HISTORY_KEY) || [];
-            const existingIndex = history.findIndex(item => item.date === dayRecord.date);
-
-            if (existingIndex > -1) {
-                // Update existing record for the day
-                history[existingIndex] = dayRecord;
-            } else {
-                // Add new record for the day
-                history.push(dayRecord);
-            }
-
-             // Sort history by date to keep it organized (optional but good practice)
-             history.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            await localforage.setItem(PUNCH_HISTORY_KEY, history);
-            console.log("Journée finalisée et sauvegardée dans l'historique global:", JSON.parse(JSON.stringify(dayRecord)));
-
-             // After saving to history, update the week summary display
-            loadWeekSummary();
-
-        } catch (err) {
-            console.error("Erreur finalisation journée et sauvegarde historique:", err);
-            if(typeof showToast === 'function') showToast("Erreur sauvegarde historique pointage.", "error");
-        }
-    }
-
-
-    // Charger et afficher le résumé de la semaine (somme des totalWorkMs de l'historique)
-    async function loadWeekSummary() {
-        try {
-            const history = await localforage.getItem(PUNCH_HISTORY_KEY) || [];
-            const today = new Date();
-            const weekStart = new Date(today);
-            // Calculate Monday of the current week (ISO week date standard)
-            const day = (today.getDay() + 6) % 7; // 0 for Monday, 6 for Sunday
-            weekStart.setDate(today.getDate() - day);
-            weekStart.setHours(0, 0, 0, 0);
-
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekStart.getDate() + 6); // Sunday
-            weekEnd.setHours(23, 59, 59, 999);
-
-            // Filtrer les enregistrements de cette semaine
-            const weekRecords = history.filter(record => {
-                // Ensure record date is treated as UTC start of day for comparison
-                const recordDate = new Date(record.date);
-                 // Adjust recordDate to be comparable to weekStart/weekEnd (which are local time)
-                 // Option 1: Convert weekStart/weekEnd to UTC. Option 2: Adjust recordDate to local TZ start of day.
-                 // Given getISODate returns YYYY-MM-DD (which Date() parses as UTC), let's convert weekStart/weekEnd to UTC start of day.
-                 const recordDateLocalStart = new Date(record.date);
-                 recordDateLocalStart.setHours(0,0,0,0);
-
-
-                return recordDateLocalStart >= weekStart && recordDateLocalStart <= weekEnd;
-            });
-
-            // Calculer le temps total de la semaine
-            let weekTotalWorkMs = weekRecords.reduce((total, record) => {
-                 // Ensure totalWorkMs is a number
-                 return total + (record.totalWorkMs || 0);
-            }, 0);
-
-            weekSummaryEl.textContent = formatDuration(weekTotalWorkMs);
-        } catch (err) {
-            console.error("Erreur chargement résumé semaine:", err);
-            weekSummaryEl.textContent = "--:--";
-        }
-    }
-
-    // Mettre à jour l'affichage de l'horloge en temps réel
-    function updateClock() {
-        const now = new Date();
-        currentDateEl.textContent = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        currentTimeEl.textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-        // Mettre à jour le temps écoulé si la journée est active et que c'est aujourd'hui
-        const today = getISODate(new Date());
-        if (currentDayState && currentDayState.date === today && currentDayState.dayStart && !currentDayState.dayEnd) {
-             const { formattedElapsed } = calculateDurationsAndTimes(currentDayState);
-             elapsedTimeTodayEl.textContent = formattedElapsed;
-        }
-    }
-
-    // ===== FONCTIONS D'IMPORT/EXPORT JSON =====
-
-    // Fonction pour exporter les pointages en JSON
-    async function exportPointagesToJSON() {
-        try {
-            // Récupérer l'historique des pointages
-            const punchHistory = await localforage.getItem(PUNCH_HISTORY_KEY) || [];
+            const allHistory = await localforage.getItem(PUNCH_HISTORY_KEY) || [];
+            const todayIndex = allHistory.findIndex(day => day.date === currentDayState.date);
             
-            // Créer un objet de données à exporter
-            const exportData = {
-                version: "1.0",
-                exportDate: new Date().toISOString(),
-                dataType: "pointages",
-                punchHistory: punchHistory
+            const todayRecord = {
+                date: currentDayState.date,
+                dayStart: currentDayState.dayStart,
+                dayEnd: currentDayState.dayEnd,
+                morningStart: currentDayState.dayStart, // Compatibilité avec fiches horaires
+                morningEnd: null, // Sera calculé automatiquement par fiches horaires
+                afternoonStart: null, // Sera calculé automatiquement par fiches horaires  
+                afternoonEnd: currentDayState.dayEnd,
+                status: currentDayState.status,
+                lastUpdate: getCurrentTimestamp()
             };
+
+            if (todayIndex >= 0) {
+                allHistory[todayIndex] = todayRecord;
+            } else {
+                allHistory.push(todayRecord);
+            }
+
+            // Garder seulement les 90 derniers jours
+            allHistory.sort((a, b) => b.date.localeCompare(a.date));
+            if (allHistory.length > 90) {
+                allHistory.splice(90);
+            }
+
+            await localforage.setItem(PUNCH_HISTORY_KEY, allHistory);
+            console.log('[Pointage] Historique mis à jour.');
+        } catch (err) {
+            console.error('[Pointage] Erreur sauvegarde historique:', err);
+        }
+    }
+
+    // === FONCTIONS DE CHARGEMENT ===
+    async function loadCurrentDayState() {
+        try {
+            const today = AppUtils.getISODate(new Date());
+            const storedState = await localforage.getItem(CURRENT_DAY_STATE_KEY);
             
-            // Convertir en JSON
-            const jsonString = JSON.stringify(exportData, null, 2);
+            if (storedState && storedState.date === today) {
+                currentDayState = { ...currentDayState, ...storedState };
+                console.log('[Pointage] État du jour chargé:', currentDayState);
+            } else {
+                // Nouveau jour, réinitialiser
+                currentDayState = {
+                    date: today,
+                    dayStart: null,
+                    dayEnd: null,
+                    status: 'not_started'
+                };
+                await saveCurrentDayState();
+                console.log('[Pointage] Nouveau jour initialisé.');
+            }
+        } catch (err) {
+            console.error('[Pointage] Erreur chargement état:', err);
+        }
+    }
+
+    // === FONCTIONS DE CALCUL ===
+    function calculateTodayTotal() {
+        if (!currentDayState.dayStart) return 0;
+        
+        const end = currentDayState.dayEnd || getCurrentTimestamp();
+        return calculateDuration(currentDayState.dayStart, end);
+    }
+
+    function calculateCurrentSessionDuration() {
+        if (currentDayState.status === 'day_active' && currentDayState.dayStart) {
+            const now = getCurrentTimestamp();
+            return calculateDuration(currentDayState.dayStart, now);
+        }
+        
+        return 0;
+    }
+
+    async function calculateWeekTotal() {
+        try {
+            const today = new Date();
+            const todayStr = AppUtils.getISODate(today);
+            const weekRange = AppUtils.getWeekRange(today);
+            const allHistory = await localforage.getItem(PUNCH_HISTORY_KEY) || [];
             
-            // Créer un Blob et un lien pour télécharger
-            const blob = new Blob([jsonString], { type: 'application/json' });
+            let weekTotal = 0;
+            for (let d = new Date(weekRange.weekStart); d <= weekRange.weekEnd; d.setDate(d.getDate() + 1)) {
+                const dateStr = AppUtils.getISODate(d);
+                
+                // CORRECTION : Exclure aujourd'hui du calcul pour éviter la double comptabilisation
+                if (dateStr === todayStr) {
+                    continue; // On ne compte pas aujourd'hui ici, il sera ajouté dans updateDisplay()
+                }
+                
+                const dayRecord = allHistory.find(record => record.date === dateStr);
+                
+                if (dayRecord && dayRecord.dayStart && dayRecord.dayEnd) {
+                    const dayDuration = calculateDuration(dayRecord.dayStart, dayRecord.dayEnd);
+                    weekTotal += dayDuration;
+                }
+            }
+            
+            return weekTotal;
+        } catch (err) {
+            console.error('[Pointage] Erreur calcul semaine:', err);
+            return 0;
+        }
+    }
+
+    // === FONCTIONS D'AFFICHAGE ===
+    async function updateDisplay() {
+        // Date et heure actuelles
+        if (currentDateEl) {
+            currentDateEl.textContent = new Date().toLocaleDateString('fr-FR');
+        }
+        
+        if (currentTimeEl) {
+            currentTimeEl.textContent = new Date().toLocaleTimeString('fr-FR');
+        }
+
+        // Affichage des heures de pointage
+        if (morningStartTimeDisplay) {
+            morningStartTimeDisplay.textContent = formatTimeForDisplay(currentDayState.dayStart);
+        }
+        
+        if (afternoonEndTimeDisplay) {
+            afternoonEndTimeDisplay.textContent = formatTimeForDisplay(currentDayState.dayEnd);
+        }
+
+        // CORRECTION : Temps de travail aujourd'hui avec session en cours
+        let todayTotalMs = 0;
+        
+        if (currentDayState.status === 'day_finished') {
+            // Journée terminée : utiliser le temps total enregistré
+            todayTotalMs = calculateTodayTotal();
+        } else if (currentDayState.status === 'day_active' && currentDayState.dayStart) {
+            // Journée en cours : calculer depuis le début jusqu'à maintenant
+            const now = getCurrentTimestamp();
+            todayTotalMs = calculateDuration(currentDayState.dayStart, now);
+        } else {
+            // Pas encore commencé
+            todayTotalMs = 0;
+        }
+
+        if (elapsedTimeToday) {
+            elapsedTimeToday.textContent = AppUtils.formatDuration(todayTotalMs);
+        }
+
+        // Total de la semaine (SANS compter aujourd'hui deux fois)
+        const weekTotal = await calculateWeekTotal();
+        if (weekSummary) {
+            // weekTotal contient déjà les jours précédents, on ajoute seulement aujourd'hui
+            const totalWeekWithToday = weekTotal + todayTotalMs;
+            weekSummary.textContent = AppUtils.formatDuration(totalWeekWithToday);
+        }
+
+        // Mise à jour des boutons
+        updateButtons();
+    }
+
+    function updateButtons() {
+        // Reset des boutons
+        if (btnStartMorning) {
+            btnStartMorning.disabled = true;
+            btnStartMorning.classList.remove('btn-success', 'btn-warning', 'btn-danger');
+            btnStartMorning.classList.add('btn-secondary');
+        }
+        
+        if (btnEndAfternoon) {
+            btnEndAfternoon.disabled = true;
+            btnEndAfternoon.classList.remove('btn-success', 'btn-warning', 'btn-danger');
+            btnEndAfternoon.classList.add('btn-secondary');
+        }
+
+        // Logique d'activation selon le statut
+        switch (currentDayState.status) {
+            case 'not_started':
+                if (btnStartMorning) {
+                    btnStartMorning.disabled = false;
+                    btnStartMorning.classList.remove('btn-secondary');
+                    btnStartMorning.classList.add('btn-success');
+                    btnStartMorning.textContent = 'Pointer Début Journée';
+                }
+                break;
+                
+            case 'day_active':
+                if (btnEndAfternoon) {
+                    btnEndAfternoon.disabled = false;
+                    btnEndAfternoon.classList.remove('btn-secondary');
+                    btnEndAfternoon.classList.add('btn-danger');
+                    btnEndAfternoon.textContent = 'Pointer Fin Journée';
+                }
+                break;
+                
+            case 'day_finished':
+                // Journée terminée, tous les boutons restent désactivés
+                if (btnStartMorning) {
+                    btnStartMorning.textContent = 'Journée Terminée';
+                }
+                if (btnEndAfternoon) {
+                    btnEndAfternoon.textContent = 'Journée Terminée';
+                }
+                break;
+        }
+    }
+
+    // === GESTIONNAIRES D'ÉVÉNEMENTS ===
+    async function handleStartMorning() {
+        currentDayState.dayStart = getCurrentTimestamp();
+        currentDayState.status = 'day_active';
+        
+        await saveCurrentDayState();
+        await saveToPunchHistory();
+        updateDisplay();
+        
+        AppUtils.showToast('Début de journée enregistré', 'success');
+        console.log('[Pointage] Début journée:', currentDayState.dayStart);
+    }
+
+    async function handleEndAfternoon() {
+        currentDayState.dayEnd = getCurrentTimestamp();
+        currentDayState.status = 'day_finished';
+        
+        await saveCurrentDayState();
+        await saveToPunchHistory();
+        updateDisplay();
+        
+        // Arrêter les mises à jour
+        if (updateInterval) {
+            clearInterval(updateInterval);
+            updateInterval = null;
+        }
+        
+        AppUtils.showToast('Fin de journée enregistrée', 'success');
+        console.log('[Pointage] Fin journée:', currentDayState.dayEnd);
+    }
+
+    // === EXPORT/IMPORT + EMAIL ===
+    async function exportData() {
+        try {
+            const allHistory = await localforage.getItem(PUNCH_HISTORY_KEY) || [];
+            const data = {
+                punchHistory: allHistory,
+                currentDayState: currentDayState,
+                exportDate: getCurrentTimestamp(),
+                version: 'V18-Simple'
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            
-            // Créer un élément <a> temporaire pour le téléchargement
             const a = document.createElement('a');
             a.href = url;
-            
-            // Générer un nom de fichier avec la date actuelle
-            const dateStr = new Date().toISOString().slice(0, 10);
-            a.download = `pointages_export_${dateStr}.json`;
-            
-            // Ajouter à la page, cliquer dessus, puis le supprimer
-            document.body.appendChild(a);
+            a.download = `pointage_export_${AppUtils.getISODate(new Date())}.json`;
             a.click();
-            
-            // Petit délai avant de nettoyer
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 100);
-            
-            if (typeof showToast === 'function') {
-                showToast("Export des pointages réussi", "success");
-            }
-            
+            URL.revokeObjectURL(url);
+
+            AppUtils.showToast('Export réussi !', 'success');
+            return data; // Retourner les données pour l'email
         } catch (err) {
-            console.error("Erreur lors de l'export des pointages:", err);
-            if (typeof showToast === 'function') {
-                showToast("Erreur lors de l'export des pointages", "error");
-            }
+            console.error('[Pointage] Erreur export:', err);
+            AppUtils.showToast('Erreur lors de l\'export.', 'error');
+            return null;
         }
     }
 
-    // Fonction pour importer les pointages depuis un fichier JSON
-    async function importPointagesFromJSON(file) {
+    async function sendDataByEmail() {
         try {
-            // Lire le fichier
-            const reader = new FileReader();
-            
-            reader.onload = async (event) => {
-                try {
-                    // Parser le JSON
-                    const importData = JSON.parse(event.target.result);
-                    
-                    // Vérifier si le format est correct
-                    if (!importData || !importData.dataType || importData.dataType !== "pointages" || !Array.isArray(importData.punchHistory)) {
-                        throw new Error("Format de fichier incorrect");
-                    }
-                    
-                    // Vérifier chaque entrée pour s'assurer qu'elle a le bon format
-                    const validRecords = importData.punchHistory.filter(record => {
-                        return record && 
-                               record.date && 
-                               record.dayStart && 
-                               record.dayEnd && 
-                               typeof record.totalWorkMs === 'number';
-                    });
-                    
-                    if (validRecords.length === 0) {
-                        throw new Error("Aucun enregistrement valide trouvé dans le fichier");
-                    }
-                    
-                    // Demander confirmation avant l'import
-                    const confirmation = confirm(`Vous êtes sur le point d'importer ${validRecords.length} enregistrements de pointage. Cette action remplacera vos données existantes. Voulez-vous continuer?`);
-                    
-                    if (!confirmation) {
-                        if (typeof showToast === 'function') {
-                            showToast("Import annulé", "info");
-                        }
-                        return;
-                    }
-                    
-                    // Sauvegarder dans localforage
-                    await localforage.setItem(PUNCH_HISTORY_KEY, validRecords);
-                    
-                    // Mettre à jour l'interface utilisateur
-                    await initializeOrLoadDayState(); // Recharger l'état du jour
-                    await loadWeekSummary(); // Mettre à jour le résumé de la semaine
-                    
-                    if (typeof showToast === 'function') {
-                        showToast(`${validRecords.length} enregistrements de pointage importés avec succès`, "success");
-                    }
-                    
-                } catch (parseErr) {
-                    console.error("Erreur lors du parsing du fichier JSON:", parseErr);
-                    if (typeof showToast === 'function') {
-                        showToast("Erreur: Format de fichier JSON invalide", "error");
-                    }
-                }
+            const allHistory = await localforage.getItem(PUNCH_HISTORY_KEY) || [];
+            const data = {
+                punchHistory: allHistory,
+                currentDayState: currentDayState,
+                exportDate: getCurrentTimestamp(),
+                version: 'V18-Simple'
             };
+
+            // Préparer le contenu de l'email
+            const jsonString = JSON.stringify(data, null, 2);
+            const fileName = `pointage_backup_${AppUtils.getISODate(new Date())}.json`;
             
-            reader.onerror = () => {
-                console.error("Erreur lors de la lecture du fichier");
-                if (typeof showToast === 'function') {
-                    showToast("Erreur lors de la lecture du fichier", "error");
-                }
-            };
+            // Créer un résumé lisible
+            const weekTotal = await calculateWeekTotal();
+            const todayTotal = calculateTodayTotal();
+            const summary = `
+Sauvegarde Pointage - ${new Date().toLocaleDateString('fr-FR')}
+
+Résumé:
+- Total aujourd'hui: ${AppUtils.formatDuration(todayTotal)}
+- Total cette semaine: ${AppUtils.formatDuration(weekTotal)}
+- Nombre de jours enregistrés: ${allHistory.length}
+- Statut actuel: ${currentDayState.status}
+
+Fichier JSON en pièce jointe: ${fileName}
+            `.trim();
+
+            // Encoder le JSON en base64 pour l'URL mailto
+            const encodedJson = encodeURIComponent(jsonString);
+            const encodedSummary = encodeURIComponent(summary);
             
-            // Lire le fichier comme texte
-            reader.readAsText(file);
+            // Créer l'URL mailto avec le JSON dans le corps (limité mais fonctionnel)
+            const mailtoUrl = `mailto:?subject=${encodeURIComponent('Sauvegarde Pointage - ' + new Date().toLocaleDateString('fr-FR'))}&body=${encodedSummary}%0A%0A--- DONNÉES JSON ---%0A${encodedJson}`;
+            
+            // Ouvrir le client email
+            window.location.href = mailtoUrl;
+            
+            AppUtils.showToast('Client email ouvert avec les données de sauvegarde', 'success');
             
         } catch (err) {
-            console.error("Erreur lors de l'import des pointages:", err);
-            if (typeof showToast === 'function') {
-                showToast("Erreur lors de l'import des pointages", "error");
-            }
+            console.error('[Pointage] Erreur envoi email:', err);
+            AppUtils.showToast('Erreur lors de la préparation de l\'email.', 'error');
         }
     }
 
-    // ===== INITIALISATION DES ÉCOUTEURS D'ÉVÉNEMENTS =====
+    async function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-    // Attachement des écouteurs d'événements principaux pour les boutons de pointage
-    if (btnStartDay) {
-        btnStartDay.addEventListener('click', () => punch('dayStart'));
-        console.log("Écouteur attaché au bouton de début de journée");
-    } else {
-        console.error("Bouton de début de journée introuvable");
-    }
-    
-    if (btnEndDay) {
-        btnEndDay.addEventListener('click', () => punch('dayEnd'));
-        console.log("Écouteur attaché au bouton de fin de journée");
-    } else {
-        console.error("Bouton de fin de journée introuvable");
-    }
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
 
-    // Attachement des écouteurs d'événements pour les boutons d'import/export
-    if (exportJsonBtn) {
-        exportJsonBtn.addEventListener('click', exportPointagesToJSON);
-        console.log("Écouteur attaché au bouton d'export JSON");
-    } else {
-        console.warn("Bouton d'export JSON introuvable");
-    }
-    
-    if (importJsonBtn && importJsonInput) {
-        // Quand on clique sur le bouton, on clique sur l'input file caché
-        importJsonBtn.addEventListener('click', () => {
-            importJsonInput.click();
-        });
-        
-        // Quand un fichier est sélectionné, on l'importe
-        importJsonInput.addEventListener('change', (event) => {
-            if (event.target.files && event.target.files.length > 0) {
-                const file = event.target.files[0];
-                if (file.type === "application/json" || file.name.endsWith('.json')) {
-                    importPointagesFromJSON(file);
-                } else {
-                    if (typeof showToast === 'function') {
-                        showToast("Erreur: Le fichier doit être au format JSON", "error");
-                    }
-                }
-                // Réinitialiser l'input pour permettre la sélection du même fichier à nouveau
-                event.target.value = '';
+            if (data.punchHistory && Array.isArray(data.punchHistory)) {
+                await localforage.setItem(PUNCH_HISTORY_KEY, data.punchHistory);
+                console.log('[Pointage] Historique importé:', data.punchHistory.length, 'entrées');
             }
-        });
-        console.log("Écouteurs attachés pour l'import JSON");
-    } else {
-        console.warn("Éléments d'import JSON introuvables");
+
+            if (data.currentDayState && typeof data.currentDayState === 'object') {
+                // Vérifier si c'est pour aujourd'hui
+                if (data.currentDayState.date === AppUtils.getISODate(new Date())) {
+                    currentDayState = { ...currentDayState, ...data.currentDayState };
+                    await saveCurrentDayState();
+                }
+            }
+
+            await updateDisplay();
+            AppUtils.showToast('Import réussi !', 'success');
+        } catch (err) {
+            console.error('[Pointage] Erreur import:', err);
+            AppUtils.showToast('Erreur lors de l\'import. Vérifiez le format du fichier.', 'error');
+        }
+
+        event.target.value = '';
     }
 
-    // Initialisation de la page
-    // On lance l'horloge immédiatement
-    updateClock();
-    // On met à jour l'horloge chaque seconde (ou moins souvent pour performance)
-    setInterval(updateClock, 1000); // Update clock display every second
+    // === CONFIGURATION DES ÉVÉNEMENTS ===
+    function setupEventListeners() {
+        if (btnStartMorning) {
+            btnStartMorning.addEventListener('click', handleStartMorning);
+            console.log('[Pointage] Event listener btnStartMorning configuré.');
+        }
+        
+        if (btnEndAfternoon) {
+            btnEndAfternoon.addEventListener('click', handleEndAfternoon);
+            console.log('[Pointage] Event listener btnEndAfternoon configuré.');
+        }
 
-    // Puis on charge l'état du jour et le résumé de la semaine
-    await initializeOrLoadDayState();
-    loadWeekSummary();
-    
-    console.log("Initialisation complète du module Pointage V17");
-});
+        if (exportJsonBtn) {
+            exportJsonBtn.addEventListener('click', exportData);
+            console.log('[Pointage] Event listener export configuré.');
+        }
+
+        if (sendEmailBtn) {
+            sendEmailBtn.addEventListener('click', sendDataByEmail);
+            console.log('[Pointage] Event listener email configuré.');
+        }
+
+        if (importJsonBtn && importJsonInput) {
+            importJsonBtn.addEventListener('click', () => importJsonInput.click());
+            importJsonInput.addEventListener('change', importData);
+            console.log('[Pointage] Event listeners import configurés.');
+        }
+
+        console.log('[Pointage] Event listeners configurés pour les éléments disponibles.');
+    }
+
+    function startAutoUpdate() {
+        // Mise à jour de l'heure et du temps écoulé toutes les secondes
+        updateInterval = setInterval(async () => {
+            // Toujours mettre à jour l'heure
+            if (currentTimeEl) {
+                currentTimeEl.textContent = new Date().toLocaleTimeString('fr-FR');
+            }
+            
+            // Mise à jour du temps écoulé si journée active
+            if (currentDayState.status === 'day_active') {
+                // Calcul en temps réel du temps écoulé
+                const now = getCurrentTimestamp();
+                const todayTotalMs = calculateDuration(currentDayState.dayStart, now);
+                
+                if (elapsedTimeToday) {
+                    elapsedTimeToday.textContent = AppUtils.formatDuration(todayTotalMs);
+                }
+                
+                // Mettre à jour aussi le total semaine
+                const weekTotal = await calculateWeekTotal();
+                if (weekSummary) {
+                    const totalWeekWithToday = weekTotal + todayTotalMs;
+                    weekSummary.textContent = AppUtils.formatDuration(totalWeekWithToday);
+                }
+            }
+        }, 1000);
+        
+        console.log('[Pointage] Auto-update démarré - mise à jour chaque seconde.');
+    }
+
+    // === INITIALISATION ===
+    try {
+        await loadCurrentDayState();
+        setupEventListeners();
+        await updateDisplay();
+        startAutoUpdate();
+        
+        console.log('[Pointage] Module Pointage V18 initialisé avec succès.');
+        AppUtils.showToast('Module de pointage prêt', 'info');
+        
+    } catch (err) {
+        console.error('[Pointage] Erreur initialisation:', err);
+        AppUtils.showToast('Erreur initialisation du pointage', 'error');
+    }
+}
+
+// === POINT D'ENTRÉE ===
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attemptInitializePointageModule);
+} else {
+    attemptInitializePointageModule();
+}

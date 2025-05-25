@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Congés - Vue Annuelle</title>
-    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/styles.css"> <!-- Assurez-vous que le chemin est correct -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
 </head>
 <body class="has-fixed-header">
@@ -53,9 +53,18 @@
                     </div>
                 </div>
 
-                <div class="section" id="noticeUtilisationSection">
+                <div class="section" id="noticeUtilisationSectionWrapper"> <!-- ID du wrapper pour la section notice -->
                     <h3>Notice d'Utilisation</h3>
                     <button type="button" id="afficherNoticeBtn" class="btn btn-grey btn-block">Afficher Notice</button>
+                    <div id="contenuNotice" class="toggle-content" style="display: none; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                        <p>Ceci est un exemple de notice d'utilisation.</p>
+                        <ul>
+                            <li>Le calendrier affiche la période de Juin N à Mai N+1.</li>
+                            <li>Utilisez la section "Saisie des Absences" pour ajouter ou retirer des congés.</li>
+                            <li>Les soldes sont mis à jour automatiquement.</li>
+                            <li>Le paramétrage des types de congés est accessible via "Afficher Param."</li>
+                        </ul>
+                    </div>
                 </div>
             </aside>
 
@@ -105,7 +114,6 @@
                         <table id="soldesPeriodeTable">
                             <thead><tr><th>Type</th><th>Droits</th><th>Pris</th><th>Solde</th></tr></thead>
                             <tbody>
-                                <!-- Lignes de soldes remplies par JS -->
                                 <tr><td colspan="4" style="text-align:center;">Chargement...</td></tr>
                             </tbody>
                         </table>
@@ -113,7 +121,7 @@
 
                     <div id="leaveTypesConfigContentWrapper" class="toggle-content" style="display: none; margin-top:20px;">
                         <h4>Paramétrage Types Congés</h4>
-                        <div class="table-wrapper">
+                        <div class="table-wrapper"> <!-- Ajout d'un wrapper pour la table de config -->
                             <table id="leaveTypesConfigTable">
                                 <thead><tr><th>Code</th><th>Libellé</th><th>Couleur</th><th>Droits/An</th><th>Actions</th></tr></thead>
                                 <tbody></tbody>
@@ -145,10 +153,9 @@
 
     <div id="toast-container"></div>
 
-    <script src="../js/utils.js"></script>
-    <script src="../js/export.js"></script> 
-    <script src="../js/auth.js"></script>
-    <!-- <script src="../js/app.js"></script> REMOVED app.js as it's not provided -->
-    <script src="../js/conges.js"></script>
+    <script src="../js/utils.js"></script> <!-- Assurez-vous que le chemin est correct -->
+    <script src="../js/export.js"></script> <!-- Assurez-vous que le chemin est correct, si utilisé -->
+    <script src="../js/auth.js"></script>   <!-- Assurez-vous que le chemin est correct, si utilisé -->
+    <script src="../js/conges.js"></script> <!-- Assurez-vous que le chemin est correct -->
 </body>
 </html>

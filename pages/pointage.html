@@ -47,23 +47,30 @@
                     <button type="button" id="btnEndAfternoon" class="btn btn-primary">Pointer Fin Journée</button>
                 </div>
             </div>
-            
-            <div class="import-export-controls">
-                <h3>Sauvegarde et Restauration</h3>
-                <div class="form-inline-flex">
-                    <button type="button" id="exportJsonBtn" class="btn btn-secondary">Exporter Pointages (JSON)</button>
-                    <div class="import-wrapper">
-                        <input type="file" id="importJsonInput" accept=".json" style="display:none;">
-                        <button type="button" id="importJsonBtn" class="btn btn-secondary">Importer Pointages</button>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="section">
             <h2>Résumé de la Journée et Semaine</h2>
             <p>Temps écoulé aujourd'hui : <strong id="elapsedTimeToday">00:00</strong></p>
             <p>Temps total pointé cette semaine : <strong id="weekSummary">00:00</strong></p>
+        </div>
+        
+        <div class="section">
+            <div class="import-export-controls">
+                <h3>Sauvegarde et Restauration</h3>
+                <div class="form-inline-flex">
+                    <button type="button" id="exportJsonBtn" class="btn btn-export">📁 Exporter Fichier JSON</button>
+                    <button type="button" id="sendEmailBtn" class="btn btn-primary">📧 Envoyer par Email</button>
+                    <div class="import-wrapper">
+                        <input type="file" id="importJsonInput" accept=".json" style="display:none;">
+                        <button type="button" id="importJsonBtn" class="btn btn-import button-like-label">📂 Importer Fichier</button>
+                    </div>
+                </div>
+                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                    💡 <strong>Envoi par email :</strong> Ouvre votre client email avec un résumé et les données JSON. 
+                    Idéal pour envoyer vos pointages à votre responsable ou pour une sauvegarde externe.
+                </p>
+            </div>
         </div>
     </main>
 
