@@ -1,5 +1,5 @@
-// Module Fiches Horaires (Version V37 - Correction complète affichage jours et report)
-console.log("Module Fiches Horaires V37 chargé.");
+// Module Fiches Horaires (Version V39.1 - Correction erreur constante + correction visuelle espacement)
+console.log("Module Fiches Horaires V39.1 chargé.");
 
 (function() {
     // --- Constantes ---
@@ -13,7 +13,7 @@ console.log("Module Fiches Horaires V37 chargé.");
     let dailyTheoreticalWorkMs = 7 * 3600000 + 48 * 60000; // 7h48
     let currentWeekDetailedData = null;
 
-    // --- Éléments DOM ---
+    // --- Éléments DOM (CHANGÉ: let au lieu de const pour pouvoir réassigner) ---
     const weekSelector = document.getElementById('weekSelector');
     const viewTimesheetBtn = document.getElementById('viewTimesheetBtn');
     const printTimesheetBtn = document.getElementById('printTimesheetBtn');
@@ -21,8 +21,8 @@ console.log("Module Fiches Horaires V37 chargé.");
     const userInfoNameInputEl = document.getElementById('userInfoNameInput');
     const userInfoAgentIdInputEl = document.getElementById('userInfoAgentIdInput');
     const agentDateDisplayEl = document.getElementById('agentDateDisplay');
-    const weekStartDateDisplayEl = document.getElementById('weekStartDateDisplay');
-    const weekEndDateDisplayEl = document.getElementById('weekEndDateDisplay');
+    let weekStartDateDisplayEl = document.getElementById('weekStartDateDisplay'); // CHANGÉ: let
+    let weekEndDateDisplayEl = document.getElementById('weekEndDateDisplay');     // CHANGÉ: let
     const timesheetTableBody = document.querySelector('#timesheetTable tbody');
     const prevWeekCumulInputEl = document.getElementById('prevWeekCumulInput');
     const weekTotalNetCumulCell = document.getElementById('weekTotalNetCumul');
@@ -67,6 +67,107 @@ console.log("Module Fiches Horaires V37 chargé.");
     function getWeekRange(mondayDate) { if (!(mondayDate instanceof Date) || isNaN(mondayDate.getTime())) return { startOfWeek: null, endOfWeek: null }; const startOfWeek = new Date(mondayDate); startOfWeek.setHours(0,0,0,0); const endOfWeek = new Date(startOfWeek); endOfWeek.setDate(startOfWeek.getDate() + 6); endOfWeek.setHours(23, 59, 59, 999); return { startOfWeek, endOfWeek }; }
     function getISODate(date) { if (!date || !(date instanceof Date) || isNaN(date.getTime())) return ''; const year = date.getFullYear(); const month = String(date.getMonth() + 1).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); return `${year}-${month}-${day}`; }
 
+    // --- Nouvelles fonctions pour vérifier les pointages ---
+    async function isDayWorked(isoDate) {
+        try {
+            const allPunchHistory = await localforage.getItem(PUNCH_HISTORY_KEY) || [];
+            const punchRecord = allPunchHistory.find(p => p.date === isoDate);
+            
+            if (!punchRecord) {
+                console.log(`[FH V39.1] Jour ${isoDate}: Aucun pointage trouvé`);
+                return false;
+            }
+            
+            // Vérifier si le jour a été vraiment travaillé (avec des heures de début/fin)
+            const hasValidStart = punchRecord.dayStart && punchRecord.dayStart !== '';
+            const hasValidEnd = punchRecord.dayEnd && punchRecord.dayEnd !== '';
+            
+            console.log(`[FH V39.1] Jour ${isoDate}: Start=${hasValidStart}, End=${hasValidEnd}`);
+            
+            return hasValidStart && hasValidEnd;
+        } catch (err) {
+            console.error(`[FH V39.1] Erreur vérification pointage pour ${isoDate}:`, err);
+            return false;
+        }
+    }
+
+    function isDayWorkTime(dayData) {
+        // Vérifier si le jour a des heures saisies (différentes de 00:00)
+        const startMorning = dayData.startMorning || '00:00';
+        const endMorning = dayData.endMorning || '00:00';
+        const startAfternoon = dayData.startAfternoon || '00:00';
+        const endAfternoon = dayData.endAfternoon || '00:00';
+        
+        return startMorning !== '00:00' || endMorning !== '00:00' || 
+               startAfternoon !== '00:00' || endAfternoon !== '00:00';
+    }
+
+    // --- Fonction pour corriger l'espacement visuel des dates ---
+    function forceVisualSpacing() {
+        console.log("[FH V39.1] Correction espacement visuel des dates...");
+        
+        const weekStartEl = document.getElementById('weekStartDateDisplay');
+        const weekEndEl = document.getElementById('weekEndDateDisplay');
+        
+        if (weekStartEl && weekEndEl) {
+            const parentDiv = weekStartEl.parentElement;
+            
+            if (parentDiv) {
+                const currentHTML = parentDiv.innerHTML;
+                console.log("[FH V39.1] HTML actuel:", currentHTML);
+                
+                // Obtenir les textes des dates
+                const startDate = weekStartEl.textContent;
+                const endDate = weekEndEl.textContent;
+                
+                // SOLUTION TRIPLE : HTML + CSS + Espaces insécables
+                const correctedHTML = `<strong>Semaine du :</strong>&nbsp;<span id="weekStartDateDisplay">${startDate}</span>&nbsp;au&nbsp;<span id="weekEndDateDisplay">${endDate}</span>`;
+                
+                parentDiv.innerHTML = correctedHTML;
+                console.log("[FH V39.1] ✅ HTML corrigé avec espaces insécables:", correctedHTML);
+                
+                // Vérifier que les éléments sont recréés
+                const newWeekStartEl = document.getElementById('weekStartDateDisplay');
+                const newWeekEndEl = document.getElementById('weekEndDateDisplay');
+                
+                if (newWeekStartEl && newWeekEndEl) {
+                    // Ajouter CSS de sécurité pour garantir l'espacement
+                    newWeekStartEl.style.marginRight = '0.2em';
+                    newWeekEndEl.style.marginLeft = '0.2em';
+                    
+                    console.log("[FH V39.1] ✅ CSS de sécurité appliqué");
+                    
+                    // CORRECTION V39.1: Mettre à jour les références globales (maintenant possibles avec let)
+                    weekStartDateDisplayEl = newWeekStartEl;
+                    weekEndDateDisplayEl = newWeekEndEl;
+                    
+                    console.log("[FH V39.1] ✅ Références globales mises à jour");
+                    console.log("[FH V39.1] ✅ Correction visuelle complète réussie");
+                } else {
+                    console.error("[FH V39.1] ❌ Erreur: éléments perdus après reconstruction");
+                }
+            }
+        }
+        
+        // Double vérification dans l'aire d'impression
+        const printableArea = document.getElementById('printableTimesheetArea');
+        if (printableArea) {
+            let areaHTML = printableArea.innerHTML;
+            
+            // Remplacer aussi dans l'aire d'impression
+            const beforeCorrection = areaHTML;
+            areaHTML = areaHTML.replace(
+                /(<span id="weekStartDateDisplay"[^>]*>[^<]+<\/span>)\s*au\s*(<span id="weekEndDateDisplay")/g, 
+                '$1&nbsp;au&nbsp;$2'
+            );
+            
+            if (areaHTML !== beforeCorrection) {
+                printableArea.innerHTML = areaHTML;
+                console.log("[FH V39.1] ✅ Correction appliquée dans l'aire d'impression");
+            }
+        }
+    }
+
     // --- Fonctions pour la gestion des données ---
     async function getPreviousWeekCumulFromStorage(weekValue) {
         if (!weekValue) return 0;
@@ -96,9 +197,9 @@ console.log("Module Fiches Horaires V37 chargé.");
         try {
             const savedDetailedData = await localforage.getItem(`${DETAILED_TIMESHEET_KEY_PREFIX}${weekValue}`);
             if (savedDetailedData) {
-                console.log(`[FH Load V37] Données détaillées trouvées pour ${weekValue}.`);
+                console.log(`[FH Load V39.1] Données détaillées trouvées pour ${weekValue}.`);
                 if (!savedDetailedData.days || savedDetailedData.days.length < 7) {
-                    console.warn(`[FH Load V37] Données pour ${weekValue} incomplètes. Re-initialisation.`);
+                    console.warn(`[FH Load V39.1] Données pour ${weekValue} incomplètes. Re-initialisation.`);
                     const mondayOfSelectedWeek = getDateFromISOWeek(weekValue); if (!mondayOfSelectedWeek) return null;
                     const completeDetailedData = { week: weekValue, days: [] };
                     const existingDaysMap = new Map(savedDetailedData.days?.map(day => [day.date, day]) || []);
@@ -107,7 +208,7 @@ console.log("Module Fiches Horaires V37 chargé.");
                 }
                 return savedDetailedData;
             } else {
-                console.log(`[FH Load V37] Pas de données détaillées pour ${weekValue}. Pré-remplissage.`);
+                console.log(`[FH Load V39.1] Pas de données détaillées pour ${weekValue}. Pré-remplissage.`);
                 const mondayOfSelectedWeek = getDateFromISOWeek(weekValue); if (!mondayOfSelectedWeek) return null;
                 const allPunchHistory = await localforage.getItem(PUNCH_HISTORY_KEY) || [];
                 const detailedData = { week: weekValue, days: [] };
@@ -131,7 +232,7 @@ console.log("Module Fiches Horaires V37 chargé.");
 
     // --- Fonctions d'affichage et de calcul ---
     async function renderTimesheetTable(detailedWeekData) {
-        console.log("[FH Render V37] Début renderTimesheetTable.");
+        console.log("[FH Render V39.1] Début renderTimesheetTable.");
         if (!timesheetTableBody) { console.error("[FH Render] ERREUR: timesheetTableBody est null !"); return; }
         timesheetTableBody.innerHTML = '';
         if (!detailedWeekData || !detailedWeekData.days || detailedWeekData.days.length < 7) {
@@ -144,6 +245,11 @@ console.log("Module Fiches Horaires V37 chargé.");
                 const weekRange = getWeekRange(mondayOfSelectedWeek);
                 if (weekStartDateDisplayEl) weekStartDateDisplayEl.textContent = weekRange.startOfWeek.toLocaleDateString('fr-FR');
                 if (weekEndDateDisplayEl) weekEndDateDisplayEl.textContent = weekRange.endOfWeek.toLocaleDateString('fr-FR');
+                
+                // CORRECTION ESPACEMENT VISUEL V39.1
+                setTimeout(() => {
+                    forceVisualSpacing();
+                }, 100);
             }
         }
 
@@ -155,7 +261,6 @@ console.log("Module Fiches Horaires V37 chargé.");
             const dayCell = row.insertCell(); 
             dayCell.textContent = daysOfWeek[i]; 
             dayCell.className = 'day-col';
-            // console.log(`[FH Render V37] Jour ${i}: Cellule créée, texte "${daysOfWeek[i]}"`); // Déjà présent dans V33
 
             createEditableTimeCell(row, 'startMorningHours', i, dayData.startMorning.split(':')[0] || '00', 'time-cell');
             createEditableTimeCell(row, 'startMorningMinutes', i, dayData.startMorning.split(':')[1] || '00', 'time-cell');
@@ -180,10 +285,10 @@ console.log("Module Fiches Horaires V37 chargé.");
             row.insertCell().className = 'leave-col'; 
             row.insertCell().className = 'absence-col';
             
-            recalculateDayRow(row, dayData); 
+            await recalculateDayRow(row, dayData, i); 
         }
         await updateCumulsAndTotal(); 
-        console.log("[FH Render V37] Fin renderTimesheetTable.");
+        console.log("[FH Render V39.1] Fin renderTimesheetTable.");
     }
 
     function createEditableTimeCell(row, fieldName, dayIndex, defaultValue, className) {
@@ -210,7 +315,7 @@ console.log("Module Fiches Horaires V37 chargé.");
         cell.appendChild(input); return cell;
     }
 
-    function recalculateDayRow(row, dayData) {
+    async function recalculateDayRow(row, dayData, dayIndex) {
         if (!row || !dayData) { return 0; }
         try {
             const startMorningMs = parseTimeToMs(dayData.startMorning);
@@ -221,12 +326,14 @@ console.log("Module Fiches Horaires V37 chargé.");
             let afternoonDurationMs = endAfternoonMs >= startAfternoonMs ? endAfternoonMs - startAfternoonMs : 0;
             morningDurationMs = Math.max(0, morningDurationMs); afternoonDurationMs = Math.max(0, afternoonDurationMs);
             const totalDayMs = morningDurationMs + afternoonDurationMs;
+            
             row.cells[5].textContent = String(Math.floor(morningDurationMs / 3600000)).padStart(2, '0');
             row.cells[6].textContent = String(Math.floor((morningDurationMs % 3600000) / 60000)).padStart(2, '0');
             row.cells[11].textContent = String(Math.floor(afternoonDurationMs / 3600000)).padStart(2, '0');
             row.cells[12].textContent = String(Math.floor((afternoonDurationMs % 3600000) / 60000)).padStart(2, '0');
             row.cells[13].textContent = String(Math.floor(totalDayMs / 3600000)).padStart(2, '0');
             row.cells[14].textContent = String(Math.floor((totalDayMs % 3600000) / 60000)).padStart(2, '0');
+            
             return totalDayMs;
         } catch (err) { console.error(`Erreur recalcul ligne (${dayData?.date}):`, err); return 0; }
     }
@@ -256,14 +363,14 @@ console.log("Module Fiches Horaires V37 chargé.");
             dayData[segment] = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}`;
             
             const row = timesheetTableBody.rows[dayIndex];
-            if(row) recalculateDayRow(row, dayData);
+            if(row) await recalculateDayRow(row, dayData, dayIndex);
             await updateCumulsAndTotal();
             if(typeof showToast === 'function') showToast(`Horaire mis à jour.`, "success");
         }
     }
     
     async function updateCumulsAndTotal() {
-        console.log("[FH Cumul V37] Début updateCumulsAndTotal.");
+        console.log("[FH Cumul V39.1] Début updateCumulsAndTotal.");
         if (!currentWeekDetailedData || !currentWeekDetailedData.days || !currentWeekDetailedData.days.length) return;
         const weekValue = currentWeekDetailedData.week;
         if (!weekValue) return;
@@ -293,7 +400,19 @@ console.log("Module Fiches Horaires V37 chargé.");
 
             let dayDeviationMs = 0;
             if (i < displayedDaysInTable) { 
-                dayDeviationMs = dayTotalWorkMs - dailyTheoreticalWorkMs;
+                // LOGIQUE V39.1: Vérifier si le jour a été pointé/travaillé
+                const isDayPointedOrWorked = await isDayWorked(dayData.date) || isDayWorkTime(dayData);
+                
+                if (isDayPointedOrWorked) {
+                    // Jour pointé/travaillé: calcul normal de l'écart
+                    dayDeviationMs = dayTotalWorkMs - dailyTheoreticalWorkMs;
+                    console.log(`[FH V39.1] Jour ${i} (${dayData.date}): Pointé/Travaillé - Écart: ${formatMsToSignedHHMMString(dayDeviationMs, true)}`);
+                } else {
+                    // Jour non pointé/non travaillé: cumul = 0 (pas d'écart négatif)
+                    dayDeviationMs = 0;
+                    console.log(`[FH V39.1] Jour ${i} (${dayData.date}): Non pointé/Non travaillé - Cumul: 00:00`);
+                }
+                
                 const row = timesheetTableBody.rows[i];
                 if(row && row.cells[15]) { 
                     const cumulCell = row.cells[15];
@@ -315,11 +434,11 @@ console.log("Module Fiches Horaires V37 chargé.");
         }
         await saveDetailedWeekData(weekValue, currentWeekDetailedData);
         await saveWeekCumul(weekValue, finalOverallCumulMs);
-        console.log("[FH Cumul V37] Cumuls mis à jour et sauvegardés.");
+        console.log("[FH Cumul V39.1] Cumuls mis à jour et sauvegardés.");
     }
     
     async function loadAndDisplayTimesheet() {
-         console.log("[FH Load V37] Début chargement et affichage.");
+         console.log("[FH Load V39.1] Début chargement et affichage.");
          const selectedWeekValue = weekSelector.value;
          if (!selectedWeekValue) { if(typeof showToast === 'function') showToast("Veuillez sélectionner une semaine.", "warning"); return; }
 
@@ -334,16 +453,17 @@ console.log("Module Fiches Horaires V37 chargé.");
          if (currentWeekDetailedData) {
              await renderTimesheetTable(currentWeekDetailedData);
          } else { if(typeof showToast === 'function') showToast("Erreur chargement données.", "error");}
-         console.log("[FH Load V37] Fin chargement.");
+         console.log("[FH Load V39.1] Fin chargement.");
     }
+    
     async function delayedInitialLoad() {
-         console.log("[FH Init V37] Dans le callback delayedInitialLoad.");
+         console.log("[FH Init V39.1] Dans le callback delayedInitialLoad.");
          await loadAndDisplayTimesheet();
-         console.log("[FH Init V37] Appel initial de loadAndDisplayTimesheet terminé.");
+         console.log("[FH Init V39.1] Appel initial de loadAndDisplayTimesheet terminé.");
     }
     
     async function initializePage() {
-        console.log("[FH Init V37] Début initialisation.");
+        console.log("[FH Init V39.1] Début initialisation.");
         const userData = await localforage.getItem(USER_DATA_KEY) || { name: "", agentId: "" };
         if (userInfoNameInputEl) userInfoNameInputEl.value = userData.name || "";
         if (userInfoAgentIdInputEl) userInfoAgentIdInputEl.value = userData.agentId || "";
@@ -398,21 +518,64 @@ console.log("Module Fiches Horaires V37 chargé.");
         }
         setupEventListeners();
         setTimeout(delayedInitialLoad, 50);
-        console.log("[FH Init V37] Initialisation terminée.");
+        console.log("[FH Init V39.1] Initialisation terminée.");
     }
     
     function setupEventListeners() {
-        console.log("[FH Setup V37] Attachement des écouteurs.");
+        console.log("[FH Setup V39.1] Attachement des écouteurs.");
         if (viewTimesheetBtn) viewTimesheetBtn.addEventListener('click', loadAndDisplayTimesheet);
-        if (weekSelector) weekSelector.addEventListener('change', loadAndDisplayTimesheet);
-        if (printTimesheetBtn) { console.log("[FH Setup V37] Bouton print géré par impression.js");}
+        
+        // VERSION SIMPLIFIÉE V39.1 : Event listener amélioré pour corriger l'espacement des dates
+        if (weekSelector) {
+            weekSelector.addEventListener('change', async () => {
+                await loadAndDisplayTimesheet();
+                // Corriger l'espacement après chargement
+                setTimeout(forceVisualSpacing, 200);
+            });
+        }
+        
+        if (printTimesheetBtn) { console.log("[FH Setup V39.1] Bouton print géré par impression.js");}
     }
+
+    // --- Fonction utilitaire pour tests (à supprimer après validation) ---
+    function testDateSpacing() {
+        const weekStart = document.getElementById('weekStartDateDisplay');
+        const weekEnd = document.getElementById('weekEndDateDisplay');
+        
+        if (weekStart && weekEnd) {
+            const parent = weekStart.parentElement;
+            console.log("[FH V39.1] Test espacement:");
+            console.log("- HTML actuel:", parent.innerHTML);
+            console.log("- Contient '&nbsp;au&nbsp;' ?", parent.innerHTML.includes('&nbsp;au&nbsp;'));
+            console.log("- Text content:", parent.textContent);
+            
+            return parent.innerHTML.includes('&nbsp;au&nbsp;') || parent.innerHTML.includes(' au ');
+        }
+        return false;
+    }
+
+    // --- Fonction de vérification pour la console (à supprimer après tests) ---
+    function forceFixIfNeeded() {
+        if (!testDateSpacing()) {
+            console.log("[FH V39.1] 🔧 Espacement manquant détecté, correction...");
+            forceVisualSpacing();
+        } else {
+            console.log("[FH V39.1] ✅ Espacement correct");
+        }
+    }
+
+    // --- Exposition globale des fonctions de test (pour debugging) ---
+    window.FH_V39_Debug = {
+        testDateSpacing,
+        forceFixIfNeeded,
+        forceVisualSpacing
+    };
 
     // --- Lancement ---
     document.addEventListener('DOMContentLoaded', () => {
-        console.log("[FH Launch V37] DOMContentLoaded. Init.");
+        console.log("[FH Launch V39.1] DOMContentLoaded. Init.");
         initializePage().catch(err => {
-            console.error("[FH Launch V37] Erreur init:", err);
+            console.error("[FH Launch V39.1] Erreur init:", err);
             if(typeof showToast === 'function') showToast("Erreur Init Fiches Horaires.", "error", 15000);
         });
     });

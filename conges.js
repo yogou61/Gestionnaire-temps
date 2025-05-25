@@ -1,4 +1,4 @@
-// app/js/conges.js (Version Rev.15 - Interface Complète avec liste d'absences)
+// app/js/conges.js (Version Rev.15 - Interface Complète - Syntaxe Corrigée)
 
 // Variable globale pour éviter la double initialisation
 let congesInitialized = false;
@@ -7,7 +7,6 @@ async function initializeCongesModuleActual() {
     // Vérification de l'identifiant de page - on est sur pointage si btnStartMorning existe
     const pointagePageIdentifier = document.getElementById('btnStartMorning');
     if (pointagePageIdentifier) {
-        // console.log('[Conges] Page de pointage détectée, module congés non activé.');
         return; 
     }
     
@@ -17,12 +16,11 @@ async function initializeCongesModuleActual() {
                            document.querySelector('.conges-layout-grid') ||
                            document.querySelector('.annual-calendar-placeholder');
     if (!congesPageCheck) {
-        console.log('[Conges] Pas sur la page de congés, module non activé. Éléments recherchés non trouvés.');
+        console.log('[Conges] Pas sur la page de congés, module non activé.');
         return;
     }
     
     console.log('[Conges] Page de congés détectée, initialisation du module.');
-    console.log('[Conges] Module Congés (Rev.15) fonction initializeCongesModuleActual exécutée.');
 
     // Vérification des dépendances
     if (typeof localforage === 'undefined' || 
@@ -31,26 +29,24 @@ async function initializeCongesModuleActual() {
         typeof AppUtils.dateToYYYYMMDD !== 'function' ||
         typeof AppUtils.parseYYYYMMDD !== 'function' ||
         typeof AppUtils.getFrenchHolidays !== 'function') {
-        console.error("[Conges] Dépendances manquantes (localforage ou AppUtils/fonctions).");
+        console.error("[Conges] Dépendances manquantes.");
         AppUtils?.showToast?.("Erreur: dépendances manquantes pour le module Congés.", "error");
         return;
     }
     console.log('[Conges] Dépendances vérifiées et présentes.');
 
-    // Références DOM (optionnelles pour la flexibilité)
+    // Références DOM
     const currentDateEl = document.getElementById('currentDateDisplay');
     const periodeAfficheeEl = document.getElementById('periodeAffichee');
     const annualCalendarEl = document.querySelector('.annual-calendar-placeholder');
 
-    // Vérification de l'élément DOM principal du calendrier
     if (!annualCalendarEl) {
-        console.warn("[Conges] Élément calendrier annuel (.annual-calendar-placeholder) non trouvé. Fonctionnalités limitées.");
-        // Ne pas faire return ici, juste un avertissement
+        console.warn("[Conges] Élément calendrier non trouvé.");
     } else {
-        console.log("[Conges] Élément calendrier trouvé, fonctionnalités complètes disponibles.");
+        console.log("[Conges] Élément calendrier trouvé.");
     }
 
-    // ✅ DÉFINITION : Constantes et variables avec la nouvelle liste d'absences
+    // Constantes et variables
     const LEAVE_TYPES_CONFIG_KEY = 'leaveTypesConfig';
     const ALL_LEAVE_REQUESTS_KEY = 'allLeaveRequests';
     
@@ -124,85 +120,81 @@ async function initializeCongesModuleActual() {
     let allLeaveRequests = [];
     let currentYear = new Date().getFullYear();
 
-    // --- DÉFINITIONS DES FONCTIONS INTERNES (HELPER FUNCTIONS) ---
-
-    async function _saveLeaveTypesConfig() { 
+    // Fonctions helper
+    async function saveLeaveTypesConfig() { 
         try { 
             await localforage.setItem(LEAVE_TYPES_CONFIG_KEY, leaveTypesConfig); 
-            console.log("[Conges] Configuration des types de congés sauvegardée.");
+            console.log("[Conges] Configuration sauvegardée.");
         } catch (err) { 
-            console.error("[Conges] Erreur sauvegarde LTC:", err); 
+            console.error("[Conges] Erreur sauvegarde:", err); 
             AppUtils.showToast("Erreur sauvegarde config types.", "error"); 
         }
     }
 
-    async function _loadLeaveTypesConfig() { 
+    async function loadLeaveTypesConfig() { 
         try { 
             let storedConfig = await localforage.getItem(LEAVE_TYPES_CONFIG_KEY);
-            console.log(`[Conges Debug] _loadLeaveTypesConfig - Données brutes de localforage pour ${LEAVE_TYPES_CONFIG_KEY}:`, storedConfig);
+            console.log("[Conges] Chargement config:", storedConfig ? "OK" : "Vide");
             leaveTypesConfig = { ...JSON.parse(JSON.stringify(defaultLeaveTypes)) }; 
             if (storedConfig && typeof storedConfig === 'object' && Object.keys(storedConfig).length > 0) {
                 for (const code in storedConfig) {
                     leaveTypesConfig[code] = {
-                        ...(leaveTypesConfig[code] || {}), ...storedConfig[code],      
+                        ...(leaveTypesConfig[code] || {}), 
+                        ...storedConfig[code],      
                         isPredefined: !!(defaultLeaveTypes[code]?.isPredefined), 
                         deletable: defaultLeaveTypes[code] ? !!defaultLeaveTypes[code].deletable : true 
                     };
                 }
             }
         } catch (err) { 
-            console.error("[Conges] Erreur chargement LTC:", err); 
+            console.error("[Conges] Erreur chargement config:", err); 
             leaveTypesConfig = JSON.parse(JSON.stringify(defaultLeaveTypes)); 
         }
-        await _saveLeaveTypesConfig(); 
+        await saveLeaveTypesConfig(); 
     }
 
-    async function _loadAllLeaveRequests() {
+    async function loadAllLeaveRequests() {
         try {
             const storedRequests = await localforage.getItem(ALL_LEAVE_REQUESTS_KEY);
             allLeaveRequests = storedRequests || [];
-            console.log("[Conges] Demandes de congés chargées:", allLeaveRequests.length, "éléments");
+            console.log("[Conges] Demandes chargées:", allLeaveRequests.length);
         } catch (err) {
             console.error("[Conges] Erreur chargement demandes:", err);
             allLeaveRequests = [];
-            AppUtils.showToast("Erreur chargement des demandes de congés.", "error");
         }
     }
 
-    async function _saveAllLeaveRequests() {
+    async function saveAllLeaveRequests() {
         try {
             await localforage.setItem(ALL_LEAVE_REQUESTS_KEY, allLeaveRequests);
-            console.log("[Conges] Demandes de congés sauvegardées:", allLeaveRequests.length, "éléments");
+            console.log("[Conges] Demandes sauvegardées:", allLeaveRequests.length);
         } catch (err) {
             console.error("[Conges] Erreur sauvegarde demandes:", err);
-            AppUtils.showToast("Erreur sauvegarde des demandes de congés.", "error");
         }
     }
 
-    function _updatePeriodeAffichee() {
+    function updatePeriodeAffichee() {
         if (periodeAfficheeEl) {
             periodeAfficheeEl.textContent = `Année ${currentYear}`;
         }
     }
 
-    function _updateCurrentDate() {
+    function updateCurrentDate() {
         if (currentDateEl) {
             const today = new Date();
             currentDateEl.textContent = AppUtils.dateToYYYYMMDD(today) || today.toLocaleDateString('fr-FR');
         }
     }
 
-    function _populateLeaveTypeSelect() {
+    function populateLeaveTypeSelect() {
         const leaveTypeSelect = document.getElementById('saisieTypeAbsence');
         if (!leaveTypeSelect) {
-            console.log("[Conges] Select des types de congés non trouvé (ID: saisieTypeAbsence).");
+            console.log("[Conges] Select non trouvé.");
             return;
         }
 
-        // Vider le select
         leaveTypeSelect.innerHTML = '<option value="">-- Choisir un type --</option>';
 
-        // Ajouter les options depuis la configuration
         Object.entries(leaveTypesConfig).forEach(([code, config]) => {
             const option = document.createElement('option');
             option.value = code;
@@ -210,14 +202,12 @@ async function initializeCongesModuleActual() {
             leaveTypeSelect.appendChild(option);
         });
 
-        console.log("[Conges] Select des types de congés peuplé avec", Object.keys(leaveTypesConfig).length, "options");
+        console.log("[Conges] Select peuplé avec", Object.keys(leaveTypesConfig).length, "options");
     }
 
-    function _displayLeaveRequestsList() {
-        // Créer un container pour la liste s'il n'existe pas
+    function displayLeaveRequestsList() {
         let listContainer = document.getElementById('leaveRequestsList');
         if (!listContainer) {
-            // Chercher la section des absences pour y ajouter la liste
             const saisieSection = document.getElementById('saisieAbsencesSection');
             if (saisieSection) {
                 listContainer = document.createElement('div');
@@ -231,42 +221,39 @@ async function initializeCongesModuleActual() {
                 saisieSection.appendChild(title);
                 saisieSection.appendChild(listContainer);
             } else {
-                console.log("[Conges] Impossible de créer le container de liste des demandes.");
+                console.log("[Conges] Impossible de créer le container de liste.");
                 return;
             }
         }
 
         if (allLeaveRequests.length === 0) {
-            listContainer.innerHTML = '<p style="color: #666; font-style: italic;">Aucune demande de congés enregistrée.</p>';
+            listContainer.innerHTML = '<p style="color: #666; font-style: italic;">Aucune demande enregistrée.</p>';
             return;
         }
 
         let html = '<div class="leave-requests-table">';
         html += '<table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">';
         html += '<thead><tr style="background-color: #f8f9fa;">';
-        html += '<th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Type</th>';
-        html += '<th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Début</th>';
-        html += '<th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Fin</th>';
-        html += '<th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Jours</th>';
-        html += '<th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Commentaire</th>';
-        html += '<th style="padding: 8px; border: 1px solid #ddd; text-align: center;">Actions</th>';
+        html += '<th style="padding: 8px; border: 1px solid #ddd;">Type</th>';
+        html += '<th style="padding: 8px; border: 1px solid #ddd;">Début</th>';
+        html += '<th style="padding: 8px; border: 1px solid #ddd;">Fin</th>';
+        html += '<th style="padding: 8px; border: 1px solid #ddd;">Jours ouvrés</th>'; // Préciser "jours ouvrés"
+        html += '<th style="padding: 8px; border: 1px solid #ddd;">Actions</th>';
         html += '</tr></thead><tbody>';
 
-        // Trier par date de début (plus récent en premier)
         const sortedRequests = [...allLeaveRequests].sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
 
         sortedRequests.forEach(request => {
             const leaveType = leaveTypesConfig[request.type];
             const startDate = new Date(request.startDate);
             const endDate = new Date(request.endDate);
-            const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+            const workingDays = calculateWorkingDays(startDate, endDate); // Utiliser les jours ouvrés
 
             html += '<tr>';
             html += `<td style="padding: 6px 8px; border: 1px solid #ddd;"><span style="background-color: ${leaveType?.color || '#ccc'}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">${leaveType?.label || request.type}</span></td>`;
-            html += `<td style="padding: 6px 8px; border: 1px solid #ddd;">${new Date(request.startDate).toLocaleDateString('fr-FR')}</td>`;
-            html += `<td style="padding: 6px 8px; border: 1px solid #ddd;">${new Date(request.endDate).toLocaleDateString('fr-FR')}</td>`;
-            html += `<td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center;">${days}</td>`;
-            html += `<td style="padding: 6px 8px; border: 1px solid #ddd;">${request.comment || '-'}</td>`;
+            html += `<td style="padding: 6px 8px; border: 1px solid #ddd;">${startDate.toLocaleDateString('fr-FR')}</td>`;
+            html += `<td style="padding: 6px 8px; border: 1px solid #ddd;">${endDate.toLocaleDateString('fr-FR')}</td>`;
+            html += `<td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center;">${workingDays}j</td>`; // Ajouter "j" pour "jours ouvrés"
             html += `<td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center;">`;
             html += `<button onclick="window.deleteLeaveRequest('${request.id}')" class="btn btn-xs btn-danger" style="padding: 2px 6px; font-size: 0.75em;">Supprimer</button>`;
             html += `</td>`;
@@ -276,16 +263,16 @@ async function initializeCongesModuleActual() {
         html += '</tbody></table></div>';
         listContainer.innerHTML = html;
 
-        console.log("[Conges] Liste des demandes affichée:", allLeaveRequests.length, "éléments");
+        console.log("[Conges] Liste affichée:", allLeaveRequests.length, "éléments");
     }
 
-    function _generateAnnualCalendar() {
+    function generateAnnualCalendar() {
         if (!annualCalendarEl) {
-            console.log("[Conges] Élément calendrier non disponible, génération ignorée.");
+            console.log("[Conges] Calendrier non disponible.");
             return;
         }
 
-        console.log(`[Conges] Génération du calendrier pour l'année ${currentYear}`);
+        console.log(`[Conges] Génération calendrier ${currentYear}`);
         annualCalendarEl.innerHTML = '';
         const holidays = AppUtils.getFrenchHolidays(currentYear);
         const holidayDates = new Set(holidays.map(h => h.date));
@@ -345,11 +332,20 @@ async function initializeCongesModuleActual() {
                     const leaveForDate = allLeaveRequests.find(req => 
                         dateStr >= req.startDate && dateStr <= req.endDate
                     );
-                    if (leaveForDate && leaveTypesConfig[leaveForDate.type]) {
+                    
+                    // IMPORTANT : Ne colorier que si c'est un jour ouvré (pas week-end ni férié)
+                    if (leaveForDate && leaveTypesConfig[leaveForDate.type] && !isWeekend && !isHoliday) {
                         const leaveType = leaveTypesConfig[leaveForDate.type];
                         dayCell.style.backgroundColor = leaveType.color;
                         dayCell.style.color = '#fff';
                         dayCell.title = `${leaveType.label} - ${leaveForDate.startDate} au ${leaveForDate.endDate}`;
+                    } else if (leaveForDate && (isWeekend || isHoliday)) {
+                        // Si congé mais week-end/férié, juste ajouter une info dans le titre sans colorier
+                        const leaveType = leaveTypesConfig[leaveForDate.type];
+                        if (leaveType) {
+                            const existingTitle = dayCell.title || '';
+                            dayCell.title = existingTitle + (existingTitle ? ' | ' : '') + `${leaveType.label} (non comptabilisé)`;
+                        }
                     }
 
                     cell.appendChild(dayCell);
@@ -365,7 +361,7 @@ async function initializeCongesModuleActual() {
         }
     }
 
-    function _updateLegend() {
+    function updateLegend() {
         const legendContainer = document.getElementById('congesLegendContainer');
         if (!legendContainer) {
             console.log("[Conges] Container de légende non trouvé.");
@@ -396,19 +392,175 @@ async function initializeCongesModuleActual() {
         console.log("[Conges] Légende mise à jour avec", Object.keys(leaveTypesConfig).length, "types");
     }
 
-    function _setupEventListeners() {
+    function updateSoldesTable() {
+        const tableBody = document.querySelector('#soldesPeriodeTable tbody');
+        if (!tableBody) {
+            console.log("[Conges] Table des soldes non trouvée.");
+            return;
+        }
+
+        tableBody.innerHTML = '';
+
+        Object.entries(leaveTypesConfig).forEach(([code, config]) => {
+            if (config.annualEntitlement > 0) {
+                const usedDays = calculateUsedDays(code);
+                const remaining = config.annualEntitlement - usedDays;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${config.label}</td>
+                    <td style="text-align: center;">${config.annualEntitlement}</td>
+                    <td style="text-align: center;">${usedDays}</td>
+                    <td style="text-align: center; color: ${remaining >= 0 ? '#2ecc71' : '#e74c3c'}">${remaining}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        });
+
+        console.log("[Conges] Table des soldes mise à jour");
+    }
+
+    function calculateUsedDays(leaveType) {
+        return allLeaveRequests
+            .filter(req => req.type === leaveType)
+            .reduce((total, req) => {
+                const start = new Date(req.startDate);
+                const end = new Date(req.endDate);
+                
+                // Calculer les jours ouvrés (excluant week-ends et jours fériés)
+                const workingDays = calculateWorkingDays(start, end);
+                return total + workingDays;
+            }, 0);
+    }
+
+    function calculateWorkingDays(startDate, endDate) {
+        let count = 0;
+        const currentDate = new Date(startDate);
+        
+        // Récupérer les jours fériés pour l'année (ou les années concernées)
+        const startYear = currentDate.getFullYear();
+        const endYear = endDate.getFullYear();
+        let holidays = new Set();
+        
+        // Gérer le cas où la période s'étend sur plusieurs années
+        for (let year = startYear; year <= endYear; year++) {
+            const yearHolidays = AppUtils.getFrenchHolidays(year);
+            yearHolidays.forEach(holiday => holidays.add(holiday.date));
+        }
+        
+        // Compter les jours ouvrés
+        while (currentDate <= endDate) {
+            const dayOfWeek = currentDate.getDay(); // 0 = dimanche, 6 = samedi
+            const dateStr = AppUtils.dateToYYYYMMDD(currentDate);
+            
+            // Exclure week-ends (samedi=6, dimanche=0) et jours fériés
+            if (dayOfWeek !== 0 && dayOfWeek !== 6 && !holidays.has(dateStr)) {
+                count++;
+            }
+            
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        return count;
+    }
+
+    function updateLeaveTypesConfigTable() {
+        const tableBody = document.querySelector('#leaveTypesConfigTable tbody');
+        if (!tableBody) {
+            console.log("[Conges] Table de configuration non trouvée.");
+            return;
+        }
+
+        tableBody.innerHTML = '';
+
+        Object.entries(leaveTypesConfig).forEach(([code, config]) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${code}</td>
+                <td>${config.label}</td>
+                <td style="text-align: center;"><span class="legend-color-box" style="background-color: ${config.color}"></span></td>
+                <td style="text-align: center;">${config.annualEntitlement}</td>
+                <td style="text-align: right;">
+                    ${config.deletable ? `<button onclick="window.editLeaveType('${code}')" class="btn btn-xs btn-secondary">Modifier</button>
+                    <button onclick="window.deleteLeaveType('${code}')" class="btn btn-xs btn-danger">Supprimer</button>` : 
+                    '<span style="font-size: 0.8em; color: #666;">Prédéfini</span>'}
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        console.log("[Conges] Table de configuration mise à jour");
+    }
+
+    async function exportData() {
+        try {
+            const data = {
+                leaveTypesConfig,
+                allLeaveRequests,
+                exportDate: new Date().toISOString(),
+                version: 'Rev.15'
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `conges_export_${AppUtils.dateToYYYYMMDD(new Date())}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            AppUtils.showToast("Export réussi !", "success");
+        } catch (err) {
+            console.error("[Conges] Erreur export:", err);
+            AppUtils.showToast("Erreur lors de l'export.", "error");
+        }
+    }
+
+    async function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+
+            if (data.leaveTypesConfig) {
+                leaveTypesConfig = { ...defaultLeaveTypes, ...data.leaveTypesConfig };
+                await saveLeaveTypesConfig();
+            }
+
+            if (data.allLeaveRequests && Array.isArray(data.allLeaveRequests)) {
+                allLeaveRequests = data.allLeaveRequests;
+                await saveAllLeaveRequests();
+            }
+
+            populateLeaveTypeSelect();
+            generateAnnualCalendar();
+            updateLegend();
+            updateSoldesTable();
+            displayLeaveRequestsList();
+            AppUtils.showToast("Import réussi !", "success");
+        } catch (err) {
+            console.error("[Conges] Erreur import:", err);
+            AppUtils.showToast("Erreur lors de l'import.", "error");
+        }
+
+        event.target.value = '';
+    }
+
+    function setupEventListeners() {
         // Contrôle de l'année
         const anneeDebutEl = document.getElementById('controleAnneeDebut');
         if (anneeDebutEl) {
             anneeDebutEl.value = currentYear;
             anneeDebutEl.addEventListener('change', (e) => {
                 currentYear = parseInt(e.target.value) || new Date().getFullYear();
-                _updatePeriodeAffichee();
-                _generateAnnualCalendar();
+                updatePeriodeAffichee();
+                generateAnnualCalendar();
             });
         }
 
-        // Formulaire d'ajout de congés
+        // Bouton ajouter absence
         const addLeaveBtn = document.getElementById('ajouterAbsenceBtn');
         if (addLeaveBtn) {
             addLeaveBtn.addEventListener('click', async (e) => {
@@ -417,7 +569,7 @@ async function initializeCongesModuleActual() {
                 const startDateInput = document.getElementById('saisieDateDebut');
                 const endDateInput = document.getElementById('saisieDateFin');
                 const leaveTypeSelect = document.getElementById('saisieTypeAbsence');
-                const commentInput = document.getElementById('observationsTextarea'); // Utiliser le textarea d'observations
+                const commentInput = document.getElementById('observationsTextarea');
 
                 if (!startDateInput || !endDateInput || !leaveTypeSelect) {
                     AppUtils.showToast("Éléments de formulaire manquants.", "error");
@@ -425,7 +577,7 @@ async function initializeCongesModuleActual() {
                 }
 
                 const startDate = startDateInput.value;
-                const endDate = endDateInput.value || startDate; // Si pas de fin, utiliser la date de début
+                const endDate = endDateInput.value || startDate;
                 const type = leaveTypeSelect.value;
                 const comment = commentInput ? commentInput.value : '';
 
@@ -449,10 +601,10 @@ async function initializeCongesModuleActual() {
                 };
 
                 allLeaveRequests.push(newRequest);
-                await _saveAllLeaveRequests();
-                _generateAnnualCalendar();
-                _updateSoldesTable();
-                _displayLeaveRequestsList();
+                await saveAllLeaveRequests();
+                generateAnnualCalendar();
+                updateSoldesTable();
+                displayLeaveRequestsList();
                 
                 // Reset du formulaire
                 startDateInput.value = '';
@@ -486,7 +638,6 @@ async function initializeCongesModuleActual() {
                     return;
                 }
 
-                // Chercher et supprimer les demandes correspondantes
                 const toRemove = allLeaveRequests.filter(req => 
                     req.startDate <= startDate && req.endDate >= startDate && req.type === type
                 );
@@ -500,7 +651,6 @@ async function initializeCongesModuleActual() {
                     return;
                 }
 
-                // Supprimer les demandes trouvées
                 toRemove.forEach(req => {
                     const index = allLeaveRequests.findIndex(r => r.id === req.id);
                     if (index !== -1) {
@@ -508,10 +658,10 @@ async function initializeCongesModuleActual() {
                     }
                 });
 
-                await _saveAllLeaveRequests();
-                _generateAnnualCalendar();
-                _updateSoldesTable();
-                _displayLeaveRequestsList();
+                await saveAllLeaveRequests();
+                generateAnnualCalendar();
+                updateSoldesTable();
+                displayLeaveRequestsList();
                 AppUtils.showToast(`${toRemove.length} demande(s) supprimée(s).`, "success");
             });
         }
@@ -519,26 +669,24 @@ async function initializeCongesModuleActual() {
         // Boutons d'export/import
         const exportBtn = document.getElementById('exportCongesBtn');
         if (exportBtn) {
-            exportBtn.addEventListener('click', _exportData);
+            exportBtn.addEventListener('click', exportData);
         }
 
         const importBtn = document.querySelector('label[for="importCongesFile"]');
         const importInput = document.getElementById('importCongesFile');
         if (importBtn && importInput) {
-            importBtn.addEventListener('click', () => importInput.click());
-            importInput.addEventListener('change', _importData);
+            importInput.addEventListener('change', importData);
         }
 
-        // Bouton actualiser période
+        // Autres boutons
         const actualiserBtn = document.getElementById('actualiserPeriodeBtn');
         if (actualiserBtn) {
             actualiserBtn.addEventListener('click', () => {
-                _generateAnnualCalendar();
+                generateAnnualCalendar();
                 AppUtils.showToast("Calendrier actualisé.", "success");
             });
         }
 
-        // Bouton imprimer
         const imprimerBtn = document.getElementById('imprimerVueBtn');
         if (imprimerBtn) {
             imprimerBtn.addEventListener('click', () => {
@@ -546,7 +694,6 @@ async function initializeCongesModuleActual() {
             });
         }
 
-        // Bouton afficher notice
         const afficherNoticeBtn = document.getElementById('afficherNoticeBtn');
         const contenuNotice = document.getElementById('contenuNotice');
         if (afficherNoticeBtn && contenuNotice) {
@@ -561,7 +708,6 @@ async function initializeCongesModuleActual() {
             });
         }
 
-        // Bouton afficher paramètres
         const afficherParamBtn = document.getElementById('afficherParamBtn');
         const leaveTypesConfigWrapper = document.getElementById('leaveTypesConfigContentWrapper');
         if (afficherParamBtn && leaveTypesConfigWrapper) {
@@ -569,7 +715,7 @@ async function initializeCongesModuleActual() {
                 if (leaveTypesConfigWrapper.style.display === 'none') {
                     leaveTypesConfigWrapper.style.display = 'block';
                     afficherParamBtn.textContent = 'Masquer Param.';
-                    _updateLeaveTypesConfigTable();
+                    updateLeaveTypesConfigTable();
                 } else {
                     leaveTypesConfigWrapper.style.display = 'none';
                     afficherParamBtn.textContent = 'Afficher Param.';
@@ -577,195 +723,137 @@ async function initializeCongesModuleActual() {
             });
         }
 
-    function _updateLeaveTypesConfigTable() {
-        const tableBody = document.querySelector('#leaveTypesConfigTable tbody');
-        if (!tableBody) {
-            console.log("[Conges] Table de configuration des types non trouvée.");
-            return;
+        // Gestion du formulaire de configuration des types
+        const leaveTypeConfigForm = document.getElementById('leaveTypeConfigForm');
+        if (leaveTypeConfigForm) {
+            leaveTypeConfigForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const code = document.getElementById('ltConfigCode').value.trim().toUpperCase();
+                const label = document.getElementById('ltConfigLabel').value.trim();
+                const color = document.getElementById('ltConfigColor').value;
+                const entitlement = parseFloat(document.getElementById('ltConfigInitial').value) || 0;
+                const isEditing = document.getElementById('ltConfigIsEditing').value;
+
+                if (!code || !label) {
+                    AppUtils.showToast("Code et libellé sont obligatoires.", "warning");
+                    return;
+                }
+
+                leaveTypesConfig[code] = {
+                    label,
+                    color,
+                    annualEntitlement: entitlement,
+                    isPredefined: false,
+                    deletable: true
+                };
+
+                await saveLeaveTypesConfig();
+                updateLeaveTypesConfigTable();
+                populateLeaveTypeSelect();
+                updateLegend();
+                
+                leaveTypeConfigForm.reset();
+                document.getElementById('ltConfigIsEditing').value = '';
+                document.getElementById('addUpdateLtConfigBtn').textContent = 'Sauvegarder Type';
+                
+                AppUtils.showToast(isEditing ? "Type mis à jour." : "Type ajouté.", "success");
+            });
         }
 
-        tableBody.innerHTML = '';
+        const clearFormBtn = document.getElementById('clearLtConfigFormBtn');
+        if (clearFormBtn) {
+            clearFormBtn.addEventListener('click', () => {
+                document.getElementById('leaveTypeConfigForm').reset();
+                document.getElementById('ltConfigIsEditing').value = '';
+                document.getElementById('addUpdateLtConfigBtn').textContent = 'Sauvegarder Type';
+            });
+        }
 
-        Object.entries(leaveTypesConfig).forEach(([code, config]) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${code}</td>
-                <td>${config.label}</td>
-                <td style="text-align: center;"><span class="legend-color-box" style="background-color: ${config.color}"></span></td>
-                <td style="text-align: center;">${config.annualEntitlement}</td>
-                <td style="text-align: right;">
-                    ${config.deletable ? `<button onclick="window.editLeaveType('${code}')" class="btn btn-xs btn-secondary">Modifier</button>
-                    <button onclick="window.deleteLeaveType('${code}')" class="btn btn-xs btn-danger">Supprimer</button>` : 
-                    '<span style="font-size: 0.8em; color: #666;">Prédéfini</span>'}
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
-
-        console.log("[Conges] Table de configuration mise à jour");
+        console.log("[Conges] Event listeners configurés");
     }
 
-    // Fonctions globales pour la gestion des types de congés
-    window.editLeaveType = function(code) {
-        const config = leaveTypesConfig[code];
-        if (!config) return;
-
-        document.getElementById('ltConfigCode').value = code;
-        document.getElementById('ltConfigLabel').value = config.label;
-        document.getElementById('ltConfigColor').value = config.color;
-        document.getElementById('ltConfigInitial').value = config.annualEntitlement;
-        document.getElementById('ltConfigIsEditing').value = code;
-        
-        document.getElementById('addUpdateLtConfigBtn').textContent = 'Mettre à jour';
-    };
-
-    window.deleteLeaveType = async function(code) {
-        if (!confirm(`Supprimer le type "${leaveTypesConfig[code]?.label}" ?`)) return;
-        
-        delete leaveTypesConfig[code];
-        await _saveLeaveTypesConfig();
-        _updateLeaveTypesConfigTable();
-        _populateLeaveTypeSelect();
-        _updateLegend();
-        AppUtils.showToast("Type supprimé.", "success");
-    };
-
-    function _updateSoldesTable() {
-        const tableBody = document.querySelector('#soldesPeriodeTable tbody');
-        if (!tableBody) {
-            console.log("[Conges] Table des soldes non trouvée.");
-            return;
-        }
-
-        tableBody.innerHTML = '';
-
-        Object.entries(leaveTypesConfig).forEach(([code, config]) => {
-            if (config.annualEntitlement > 0) {
-                const usedDays = _calculateUsedDays(code);
-                const remaining = config.annualEntitlement - usedDays;
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${config.label}</td>
-                    <td style="text-align: center;">${config.annualEntitlement}</td>
-                    <td style="text-align: center;">${usedDays}</td>
-                    <td style="text-align: center; color: ${remaining >= 0 ? '#2ecc71' : '#e74c3c'}">${remaining}</td>
-                `;
-                tableBody.appendChild(row);
+    // Créer un objet module global pour les fonctions callback
+    window.congesModule = {
+        deleteRequest: async function(requestId) {
+            const index = allLeaveRequests.findIndex(req => req.id === requestId);
+            if (index !== -1) {
+                allLeaveRequests.splice(index, 1);
+                await saveAllLeaveRequests();
+                generateAnnualCalendar();
+                updateSoldesTable();
+                displayLeaveRequestsList();
+                AppUtils.showToast("Demande supprimée avec succès.", "success");
             }
-        });
+        },
 
-        console.log("[Conges] Table des soldes mise à jour");
-    }
+        editType: function(code) {
+            const config = leaveTypesConfig[code];
+            if (!config) return;
 
-    function _calculateUsedDays(leaveType) {
-        return allLeaveRequests
-            .filter(req => req.type === leaveType)
-            .reduce((total, req) => {
-                const start = new Date(req.startDate);
-                const end = new Date(req.endDate);
-                const diffTime = Math.abs(end - start);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                return total + diffDays;
-            }, 0);
-    }
+            document.getElementById('ltConfigCode').value = code;
+            document.getElementById('ltConfigLabel').value = config.label;
+            document.getElementById('ltConfigColor').value = config.color;
+            document.getElementById('ltConfigInitial').value = config.annualEntitlement;
+            document.getElementById('ltConfigIsEditing').value = code;
+            
+            document.getElementById('addUpdateLtConfigBtn').textContent = 'Mettre à jour';
+        },
 
-    async function _exportData() {
-        try {
-            const data = {
-                leaveTypesConfig,
-                allLeaveRequests,
-                exportDate: new Date().toISOString(),
-                version: 'Rev.15'
-            };
-
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `conges_export_${AppUtils.dateToYYYYMMDD(new Date())}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-
-            AppUtils.showToast("Export réussi !", "success");
-        } catch (err) {
-            console.error("[Conges] Erreur export:", err);
-            AppUtils.showToast("Erreur lors de l'export.", "error");
-        }
-    }
-
-    async function _importData(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        try {
-            const text = await file.text();
-            const data = JSON.parse(text);
-
-            if (data.leaveTypesConfig) {
-                leaveTypesConfig = { ...defaultLeaveTypes, ...data.leaveTypesConfig };
-                await _saveLeaveTypesConfig();
-            }
-
-            if (data.allLeaveRequests && Array.isArray(data.allLeaveRequests)) {
-                allLeaveRequests = data.allLeaveRequests;
-                await _saveAllLeaveRequests();
-            }
-
-            _populateLeaveTypeSelect();
-            _generateAnnualCalendar();
-            _updateLegend();
-            _updateSoldesTable();
-            _displayLeaveRequestsList();
-            AppUtils.showToast("Import réussi !", "success");
-        } catch (err) {
-            console.error("[Conges] Erreur import:", err);
-            AppUtils.showToast("Erreur lors de l'import. Vérifiez le format du fichier.", "error");
-        }
-
-        event.target.value = '';
-    }
-
-    // Fonction globale pour supprimer une demande
-    window.deleteLeaveRequest = async function(requestId) {
-        if (!confirm('Êtes-vous sûr de vouloir supprimer cette demande de congés ?')) {
-            return;
-        }
-
-        const index = allLeaveRequests.findIndex(req => req.id === requestId);
-        if (index !== -1) {
-            allLeaveRequests.splice(index, 1);
-            await _saveAllLeaveRequests();
-            _generateAnnualCalendar();
-            _updateSoldesTable();
-            _displayLeaveRequestsList();
-            AppUtils.showToast("Demande supprimée avec succès.", "success");
+        deleteType: async function(code) {
+            if (!confirm(`Supprimer le type "${leaveTypesConfig[code]?.label}" ?`)) return;
+            
+            delete leaveTypesConfig[code];
+            await saveLeaveTypesConfig();
+            updateLeaveTypesConfigTable();
+            populateLeaveTypeSelect();
+            updateLegend();
+            AppUtils.showToast("Type supprimé.", "success");
         }
     };
 
     // --- SÉQUENCE D'INITIALISATION EFFECTIVE ---
     console.log("[Conges Initialize] Début de l'initialisation effective.");
     try {
-        await _loadLeaveTypesConfig(); 
-        await _loadAllLeaveRequests();
+        await loadLeaveTypesConfig(); 
+        await loadAllLeaveRequests();
         
-        _updateCurrentDate();
-        _updatePeriodeAffichee();
-        _populateLeaveTypeSelect();
-        _generateAnnualCalendar();
-        _updateLegend();
-        _updateSoldesTable();
-        _displayLeaveRequestsList();
-        _setupEventListeners(); 
+        updateCurrentDate();
+        updatePeriodeAffichee();
+        populateLeaveTypeSelect();
+        generateAnnualCalendar();
+        updateLegend();
+        updateSoldesTable();
+        displayLeaveRequestsList();
+        setupEventListeners(); 
         
         console.log("[Conges] Module Congés initialisé (Rev.15) avec", Object.keys(leaveTypesConfig).length, "types de congés et", allLeaveRequests.length, "demandes.");
         congesInitialized = true;
     } catch (error) {
-        console.error("[Conges] Erreur pendant la séquence d'initialisation effective:", error);
+        console.error("[Conges] Erreur pendant l'initialisation:", error);
         AppUtils.showToast("Erreur majeure lors de l'initialisation des congés: " + error.message, "error", 10000);
         congesInitialized = false; 
     }
 }
+
+// Fonctions globales pour les callbacks
+window.deleteLeaveRequest = function(requestId) {
+    if (window.congesModule && window.congesModule.deleteRequest) {
+        window.congesModule.deleteRequest(requestId);
+    }
+};
+
+window.editLeaveType = function(code) {
+    if (window.congesModule && window.congesModule.editType) {
+        window.congesModule.editType(code);
+    }
+};
+
+window.deleteLeaveType = function(code) {
+    if (window.congesModule && window.congesModule.deleteType) {
+        window.congesModule.deleteType(code);
+    }
+};
 
 // --- POINT D'ENTRÉE DU SCRIPT CONGES.JS ---
 function initializeCongesModuleOnce() {
