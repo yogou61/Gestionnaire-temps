@@ -3,23 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pointage Journalier - Gestion Temps</title>
+    <title>Pointage & Tableau de Bord - Gestion Temps</title>
     <link rel="stylesheet" href="../css/styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
 </head>
 <body class="has-fixed-header">
     <header class="main-header">
-        <a href="dashboard.html" class="logo">GestionTemps</a>
+        <a href="pointage.html" class="logo">GestionTemps</a>
         <nav>
             <ul>
-                <li><a href="dashboard.html">Tableau de Bord</a></li>
                 <li><a href="pointage.html" class="active">Pointage</a></li>
                 <li><a href="conges.html">Congés</a></li>
                 <li><a href="fiches-frais.html">Fiches de Frais</a></li>
                 <li><a href="fiches-horaires.html">Fiches Horaires</a></li>
-                <li><a href="profil.html">Profil</a></li>
-                <li><a href="#" id="logoutBtn">Déconnexion</a></li>
-            </ul>
+          </ul>
         </nav>
     </header>
 
@@ -55,9 +52,23 @@
             <p>Temps total pointé cette semaine : <strong id="weekSummary">00:00</strong></p>
         </div>
         
+        <!-- SECTION TABLEAU DE BORD INTÉGRÉE CI-DESSOUS -->        
+        <div class="section quick-access-section">
+            <h1>Accès rapides</h1>
+            <div class="button-group">
+                <!-- Le bouton "Commencer/Terminer ma journée" est redondant ici, on peut le retirer ou le garder -->
+                <!-- <a href="pointage.html" class="btn btn-primary">Commencer/Terminer ma journée</a> -->
+                <a href="conges.html" class="btn btn-secondary">Gérer mes congés</a>
+                <a href="fiches-horaires.html" class="btn btn-secondary">Voir mes fiches horaires</a>
+                 <a href="fiches-frais.html" class="btn btn-secondary">Gérer mes fiches de frais</a>
+            </div>
+        </div>
+        <!-- FIN SECTION TABLEAU DE BORD INTÉGRÉE -->
+        <hr> <!-- Séparateur visuel -->
+
         <div class="section">
             <div class="import-export-controls">
-                <h3>Sauvegarde et Restauration</h3>
+                <h3>Sauvegarde et Restauration des Pointages</h3>
                 <div class="form-inline-flex">
                     <button type="button" id="exportJsonBtn" class="btn btn-export">📁 Exporter Fichier JSON</button>
                     <button type="button" id="sendEmailBtn" class="btn btn-primary">📧 Envoyer par Email</button>
@@ -67,7 +78,7 @@
                     </div>
                 </div>
                 <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-                    💡 <strong>Envoi par email :</strong> Ouvre votre client email avec un résumé et les données JSON. 
+                    💡 <strong>Envoi par email :</strong> Ouvre votre client email avec un résumé et les données JSON de pointage. 
                     Idéal pour envoyer vos pointages à votre responsable ou pour une sauvegarde externe.
                 </p>
             </div>
@@ -77,9 +88,8 @@
     <div id="toast-container"></div>
 
     <script src="../js/utils.js"></script>
-    <script src="../js/auth.js"></script>
-    <script src="../js/app.js"></script>
+      <script src="../js/app.js"></script>
     <script src="../js/pointage.js"></script>
-<script src="../js/mobile-ux.js"></script>
+    <script src="../js/mobile-ux.js"></script>
 </body>
 </html>
