@@ -1,476 +1,2449 @@
-/* app/css/styles.css - Version V80 - Boutons Pointage et Styles Ajoutés */
-/* MODIFIED: Congés styles - Compact Paramétrage Types Congés */
+/* app/css/styles.css - Design Minimaliste et Moderne Complet - Version Améliorée */
 
-/* --- Variables CSS Globales --- */
+/* --- Variables CSS Minimalistes --- */
 :root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --accent-color: #e74c3c;
-    --success-color: #2ecc71;
-    --warning-color: #f39c12;
-    --info-color: #3498db;
-    --text-color: #34495e;
-    --text-color-light: #566573;
-    --border-color: #dde3e8;        
-    --border-color-light: #ecf0f1;
+    /* Palette de couleurs épurée */
+    --primary-color: #1f2937;
+    --primary-light: #374151;
+    --primary-dark: #111827;
+    --secondary-color: #3b82f6;
+    --secondary-light: #60a5fa;
+    --secondary-dark: #1e40af;
+    --accent-color: #dc2626;
+    --success-color: #059669;
+    --warning-color: #d97706;
+    --info-color: #0891b2;
+    
+    /* Couleurs de texte avec excellent contraste */
+    --text-color: #111827;
+    --text-color-medium: #374151;
+    --text-color-light: #6b7280;
+    --text-on-primary: #ffffff;
+    --text-on-secondary: #ffffff;
+    
+    /* Couleurs de fond minimalistes */
+    --bg-color: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-tertiary: #f3f4f6;
+    --card-bg: #ffffff;
+    --surface: #ffffff;
+    
+    /* Bordures épurées */
+    --border-color: #d1d5db;
+    --border-color-light: #e5e7eb;
+    --border-color-focus: var(--secondary-color);
     --border-radius-sm: 4px;
     --border-radius-md: 6px;
     --border-radius-lg: 8px;
-    --box-shadow-light: 0 1px 3px rgba(0,0,0,0.05);
-    --box-shadow-md: 0 3px 10px rgba(0,0,0,0.07);
-    --font-family-sans-serif: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    --font-size-base: 15px; 
-    --font-size-sm: 0.85em; 
-    --font-size-xs: 0.7em;  
-    --line-height-base: 1.6;
+    
+    /* Ombres subtiles */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    
+    /* Typography claire */
+    --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-family-mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Consolas', monospace;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.625;
+    
+    /* Spacing cohérent */
     --header-height: 60px;
-    --container-max-width: 1300px; 
-    --spacing-unit: 8px;
-    --text-on-primary: #ffffff;
-    --text-on-secondary: #ffffff;
-    --bg-color: #f4f6f8;
-    --card-bg: #ffffff;
-
-    --btn-blue: #3498db;
-    --btn-orange: #f39c12;
-    --btn-green: #2ecc71;
-    --btn-red: #e74c3c;
-    --btn-grey-bg: #7f8c8d; 
-    --btn-grey-text: #ffffff; 
+    --container-max-width: 1400px;
+    --spacing-1: 0.25rem;
+    --spacing-2: 0.5rem;
+    --spacing-3: 0.75rem;
+    --spacing-4: 1rem;
+    --spacing-5: 1.25rem;
+    --spacing-6: 1.5rem;
+    --spacing-8: 2rem;
+    --spacing-12: 3rem;
+    --spacing-16: 4rem;
+    
+    /* Transitions fluides */
+    --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Couleurs des boutons */
+    --btn-blue: var(--secondary-color);
+    --btn-orange: var(--warning-color);
+    --btn-green: var(--success-color);
+    --btn-red: var(--accent-color);
+    --btn-grey-bg: #6b7280;
+    --btn-grey-text: #ffffff;
 }
+
+/* --- Police moderne --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* --- Reset & Base --- */
-html { scroll-behavior: smooth; font-size: var(--font-size-base); }
-body { font-family: var(--font-family-sans-serif); margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); line-height: var(--line-height-base); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-* { box-sizing: border-box; }
-.container { max-width: var(--container-max-width); margin-left: auto; margin-right: auto; padding-left: calc(var(--spacing-unit) * 1.5); padding-right: calc(var(--spacing-unit) * 1.5); }
-main { padding-top: calc(var(--spacing-unit) * 2); padding-bottom: calc(var(--spacing-unit) * 2); }
-body.has-fixed-header { padding-top: var(--header-height); }
-
-/* --- Header Principal --- */
-header.main-header { background-color: var(--primary-color); color: var(--text-on-primary); padding: 0 calc(var(--spacing-unit) * 2.5); position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 1000; }
-.main-header .logo { font-size: 1.5em; font-weight: bold; text-decoration: none; color: var(--text-on-primary); }
-.main-header nav ul { list-style: none; display: flex; margin: 0; padding: 0; }
-.main-header nav ul li { margin-left: calc(var(--spacing-unit) * 2); }
-.main-header nav ul li a { color: var(--text-on-primary); text-decoration: none; padding: var(--spacing-unit) calc(var(--spacing-unit) * 1.25); border-radius: var(--border-radius-md); font-weight: 500; }
-.main-header nav ul li a:hover, .main-header nav ul li a.active { background-color: var(--secondary-color); }
-
-/* --- Titres & Sections Généraux --- */
-h1 { font-size: 1.8em; color: var(--primary-color); text-align: center; margin-bottom: calc(var(--spacing-unit) * 2.5); padding-bottom: var(--spacing-unit); border-bottom: 1px solid var(--border-color); }
-.section { background-color: var(--card-bg); padding: calc(var(--spacing-unit) * 2); margin-bottom: calc(var(--spacing-unit) * 2.5); border-radius: var(--border-radius-md); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-.section h2 { font-size: 1.25em; color: var(--primary-color); margin-top: 0; margin-bottom: calc(var(--spacing-unit) * 1.5); padding-bottom: calc(var(--spacing-unit)*0.75); border-bottom: 1px solid var(--border-color-light); }
-.section h3 { font-size: 1.1em; color: var(--primary-color); margin-top: calc(var(--spacing-unit) * 1.5); margin-bottom: var(--spacing-unit); }
-.section h4 { font-size: 0.95em; color: var(--text-color-light); margin-top: calc(var(--spacing-unit) * 1.5); margin-bottom: var(--spacing-unit); }
-.section h5 { font-size: 0.9em; font-weight: bold; color: var(--text-color); margin-top: var(--spacing-unit); margin-bottom: calc(var(--spacing-unit) * 0.5); }
-
-
-/* --- Formulaires Généraux --- */
-.form-group { margin-bottom: var(--spacing-unit) * 1.5; }
-.form-group label { display: block; font-size: var(--font-size-sm); color: var(--text-color-light); margin-bottom: calc(var(--spacing-unit) * 0.5); }
-input[type="text"], input[type="number"], input[type="week"], input[type="date"], input[type="time"], select, textarea { 
-    width: 100%; 
-    padding: calc(var(--spacing-unit)*0.9); 
-    border: 1px solid var(--border-color); 
-    border-radius: var(--border-radius-md); 
-    font-size: 0.9em; 
-}
-textarea { min-height: 60px; background-color: #fff; }
-input:focus, select:focus, textarea:focus { outline: none; border-color: var(--secondary-color); box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2); }
-.form-inline-flex { display: flex; flex-wrap: wrap; align-items: flex-end; gap: calc(var(--spacing-unit) * 1.5); }
-.form-inline-flex .form-group { margin-bottom: 0; }
-
-/* Pointage Page Specific Styles */
-.pointage-actions .form-group { flex-direction: column; align-items: flex-start; }
-.pointage-actions .form-group label { display: inline-block; margin-right: calc(var(--spacing-unit) * 1.5); min-width: 150px; }
-.pointage-actions .form-group strong { display: inline-block; min-width: 50px; text-align: left; margin-right: var(--spacing-unit); font-size: 1.1em; color: var(--primary-color); }
-.pointage-actions .form-group button { margin-top: var(--spacing-unit); }
-
-/* --- Boutons Généraux --- */
-.btn { 
-    display: inline-block; 
-    padding: calc(var(--spacing-unit)*0.9) calc(var(--spacing-unit) * 1.8); 
-    font-size: 0.9em; 
-    font-weight: 500; 
-    text-align: center; 
-    border-radius: var(--border-radius-md); 
-    text-decoration: none; 
-    cursor: pointer; 
-    border: 1px solid transparent; 
-    transition: background-color 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s; 
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    z-index: 5; 
-}
-.btn:after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.2); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
-.btn:hover:after { opacity: 1; }
-.btn:hover { opacity: 0.85; }
-.btn:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15); }
-
-.btn-primary { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); }
-.btn-primary:hover { background-color: #1e2b37; opacity: 1; }
-.btn-primary:disabled { background-color: #bdc3c7; cursor: not-allowed !important; box-shadow: none; transform: none; }
-.btn-secondary { background-color: var(--secondary-color); color: #fff; border-color: var(--secondary-color); }
-.btn-secondary:hover { background-color: #2980b9; opacity: 1; }
-.btn-success { background-color: var(--success-color); color: #fff; border-color: var(--success-color); }
-.btn-success:hover { background-color: #25a25a; opacity: 1; }
-
-/* --- Styles Spécifiques pour la Page Pointage --- */
-.import-export-controls { padding: 15px; background-color: rgba(248, 249, 250, 0.7); border-radius: 8px; margin-top: 20px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
-.import-export-controls h3 { margin-top: 0; margin-bottom: 12px; color: var(--primary-color); font-size: 1em; }
-#importJsonInput { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-.import-wrapper { position: relative; display: inline-block; }
-
-/* Toast notifications */
-#toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
-.toast { min-width: 250px; margin-bottom: 10px; background-color: white; color: var(--text-color); border-radius: var(--border-radius-md); padding: 15px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; align-items: center; animation: slideIn 0.3s ease-out; }
-.toast.success { border-left: 4px solid var(--success-color); }
-.toast.error { border-left: 4px solid var(--accent-color); }
-.toast.info { border-left: 4px solid var(--info-color); }
-.toast.warning { border-left: 4px solid var(--warning-color); }
-@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-/* --- ============================================= --- */
-/* --- Styles SPÉCIFIQUES pour la Fiche Horaire --- */
-/* --- ============================================= --- */
-/* ... (Styles Fiche Horaire de V80 - inchangés) ... */
-.timesheet-page-container { }
-.timesheet-controls h2 { font-size: 1.2em; margin-bottom: var(--spacing-unit); border-bottom: none; }
-.timesheet-controls .time-input { width: 75px !important; text-align: center; padding: calc(var(--spacing-unit)*0.75) !important; }
-#printableTimesheetArea { margin-top: var(--spacing-unit); }
-.timesheet-render-area { padding: var(--spacing-unit); border: none !important; box-shadow: none !important; }
-.timesheet-header { display: block; margin-bottom: calc(var(--spacing-unit) * 2); padding-bottom: calc(var(--spacing-unit) * 1.5); border-bottom: 1px solid #777 !important; font-size: 0.8em; }
-.timesheet-header .user-info div { margin-bottom: calc(var(--spacing-unit) * 0.5); display: flex; align-items: baseline; }
-.timesheet-header .user-info strong { margin-right: 5px; white-space: nowrap; }
-.user-info-input { border: none !important; padding: 1px 0; font-size: 1em; background-color: transparent !important; width: auto; min-width: 100px; }
-.user-info-input.name-input { min-width: 200px; }
-.user-info-input.agent-id-input { min-width: 80px; }
-.timesheet-header .week-info { text-align: left; margin-top: calc(var(--spacing-unit) * 4); padding-left: calc(80px + 3px + var(--spacing-unit)); }
-.timesheet-header .week-info div { margin-bottom: calc(var(--spacing-unit) * 0.25); }
-.table-wrapper { border: none !important; margin-top: calc(var(--spacing-unit) * 1); margin-bottom: calc(var(--spacing-unit) * 2); } /* Réduction des marges pour compacité */
-#timesheetTable { width: 100%; border-collapse: collapse; border: 1px solid #777 !important; font-size: 0.9em !important; }
-#timesheetTable th, #timesheetTable td { border-left: 1px solid #777 !important; border-right: 1px solid #777 !important; border-top: none !important; border-bottom: none !important; padding: 2px !important; text-align: center; vertical-align: middle; height: 20px; }
-#timesheetTable thead tr th, #timesheetTable tfoot tr td { border-top: 1px solid #777 !important; border-bottom: 1px solid #777 !important; }
-#timesheetTable thead tr:first-child th { border-top: 1px solid #777 !important; }
-#timesheetTable tbody tr td:nth-child(16) { border-top: 1px solid #777 !important; border-bottom: 1px solid #777 !important; }
-#timesheetTable td:nth-child(2), #timesheetTable thead tr:nth-child(2) th:nth-child(1), #timesheetTable td:nth-child(4), #timesheetTable thead tr:nth-child(2) th:nth-child(3), #timesheetTable td:nth-child(6), #timesheetTable thead tr:nth-child(2) th:nth-child(5), #timesheetTable td:nth-child(8), #timesheetTable thead tr:nth-child(2) th:nth-child(7), #timesheetTable td:nth-child(10),#timesheetTable thead tr:nth-child(2) th:nth-child(9), #timesheetTable td:nth-child(12),#timesheetTable thead tr:nth-child(2) th:nth-child(11), #timesheetTable td:nth-child(14),#timesheetTable thead tr:nth-child(2) th:nth-child(13) { border-right-style: none !important; padding-right: 1px !important; }
-#timesheetTable td:nth-child(3),  #timesheetTable thead tr:nth-child(2) th:nth-child(2), #timesheetTable td:nth-child(5),  #timesheetTable thead tr:nth-child(2) th:nth-child(4), #timesheetTable td:nth-child(7),  #timesheetTable thead tr:nth-child(2) th:nth-child(6), #timesheetTable td:nth-child(9),  #timesheetTable thead tr:nth-child(2) th:nth-child(8), #timesheetTable td:nth-child(11), #timesheetTable thead tr:nth-child(2) th:nth-child(10), #timesheetTable td:nth-child(13), #timesheetTable thead tr:nth-child(2) th:nth-child(12), #timesheetTable td:nth-child(15), #timesheetTable thead tr:nth-child(2) th:nth-child(14) { border-left-style: none !important; padding-left: 1px !important; }
-#timesheetTable thead th.editable-prev-cumul-header { background-color: white !important; padding: 1px !important; }
-#prevWeekCumulInput.prev-cumul-input { width: calc(100% - 2px) !important; height: calc(100% - 2px) !important; text-align: center !important; border: 1px solid #ccc !important; padding: 0 !important; font-size: 0.9em !important; box-sizing: border-box; margin: 0; vertical-align: middle; }
-#timesheetTable thead th { background-color: #D0D0E8; }
-#timesheetTable thead th.sub-header-time { font-size: 0.85em; font-weight: normal; width: 20px !important; min-width: 20px !important; max-width: 20px !important; background-color: #D0D0E8; }
-#timesheetTable thead th#headerPrevWeekCumulCellContainer { background-color: white; } 
-#timesheetTable thead tr:nth-child(2) th:last-child { background-color: white; } 
-#timesheetTable thead th.header-obs { text-align: center !important; vertical-align: middle !important; }
-#timesheetTable thead th.leave-col, #timesheetTable thead th.absence-col { background-color: #D0D0E8 !important; }
-.day-col { width: 80px !important; text-align: left !important; font-weight: bold; background-color: #D0D0E8 !important; padding-left: 3px !important; }
-.time-cell, .sub-header-time { width: 20px !important; min-width: 20px !important; max-width: 20px !important; font-family: 'Consolas', 'Courier New', monospace; font-size: 1em; padding: 2px !important; }
-td.time-cell-single { min-width: 45px; width: 45px; font-weight: bold; } 
-#timesheetTable tbody tr td:nth-child(6), #timesheetTable tbody tr td:nth-child(7), #timesheetTable tbody tr td:nth-child(12), #timesheetTable tbody tr td:nth-child(13) { background-color: #FFFFC0 !important; }
-#timesheetTable tbody tr td:nth-child(14), #timesheetTable tbody tr td:nth-child(15) { background-color: #B0E0E6 !important; }
-#timesheetTable tbody tr td:nth-child(16) { background-color: white !important; }
-.detailed-timesheet .leave-col, .detailed-timesheet .absence-col { background-color: white !important; width: 70px !important; min-width: 70px !important; }
-.detailed-timesheet .obs-col { width: 120px !important; text-align: left !important; padding: 0 !important; }
-.detailed-timesheet .obs-input { width: 100%; height: 100%; min-height: 18px; border: none; background-color: transparent; text-align: left; font-family: inherit; font-size: inherit; padding: 1px 2px; box-sizing: border-box; }
-.detailed-timesheet .obs-input:focus { background-color: #fff; outline: 1px solid var(--secondary-color); }
-.detailed-timesheet .positive-time { color: #00B050 !important; }
-.detailed-timesheet .negative-time { color: #FF0000 !important; }
-.detailed-timesheet tbody tr:hover td { background-color: #E7F5FE; }
-.detailed-timesheet tfoot tr { background-color: white; }
-.detailed-timesheet tfoot tr.total-row td { font-weight: bold; color: var(--primary-color); height: 22px; background-color: white !important; }
-.detailed-timesheet tfoot tr.total-row td.label-cell { text-align: right !important; padding-right: 10px !important; font-weight: bold; border-right: 1px solid #777 !important; }
-.detailed-timesheet tfoot tr.total-row #weekTotalNetCumul { background-color: white !important; color: var(--primary-color); text-align: center !important; border-left: 1px solid #777 !important; border-right: 1px solid #777 !important; }
-.detailed-timesheet tfoot tr.total-row td:last-child { border-left: 1px solid #777 !important; }
-.editable-timesheet tbody td input.editable-cell-input { width: 95%; height: 16px; line-height: 16px; border: none; background-color: transparent; text-align: center; font-family: 'Consolas', 'Courier New', monospace; font-size: 1em; padding: 0; margin: 0 auto; box-sizing: border-box; appearance: textfield; -moz-appearance: textfield; }
-.editable-timesheet tbody td input.editable-cell-input::-webkit-outer-spin-button, .editable-timesheet tbody td input.editable-cell-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.editable-timesheet tbody td input.editable-cell-input:focus { background-color: #fff; outline: 1px solid var(--secondary-color); }
-.timesheet-footer { margin-top: calc(var(--spacing-unit) * 3); padding-top: calc(var(--spacing-unit) * 2); border-top: 1px solid #777 !important; font-size: 0.8em;}
-.timesheet-footer::before { display: none !important; } 
-.timesheet-footer .signature-area { display: flex; flex-direction: column; align-items: flex-start; gap: calc(var(--spacing-unit) * 1.5); padding-top: 0; border-top: none !important; }
-.timesheet-footer .signature-block { width: 100%; display: flex; align-items: baseline; border: none !important; }
-.timesheet-footer .signature-date-label { font-weight: bold; white-space: nowrap; margin: 0; padding:0; min-width: 180px; flex-shrink: 0; border: none !important;}
-.timesheet-footer .signature-date-label .signature-actual-date { font-weight: normal; margin-left: calc(var(--spacing-unit) * 0.5); border: none !important;}
-.timesheet-footer .signature-text-label { text-align: left; border: none !important; padding: 0; margin:0; min-height: 1.5em; margin-left: calc(var(--spacing-unit) * 2); }
-
-/* --- ============================================= --- */
-/* --- STYLES SPÉCIFIQUES POUR LA PAGE CONGÉS (Compact Paramétrage) --- */
-/* --- ============================================= --- */
-
-.btn-block { display: block; width: 100%; margin-top: calc(var(--spacing-unit)*0.75); margin-bottom: calc(var(--spacing-unit)*0.75); } 
-.btn-primary { background-color: var(--btn-blue); border-color: var(--btn-blue); color: white; } 
-.btn-export, .btn-import.button-like-label { background-color: var(--btn-orange); border-color: var(--btn-orange); color: white; }
-.btn-print { background-color: var(--btn-green); border-color: var(--btn-green); color: white; }
-.btn-danger { background-color: var(--btn-red); border-color: var(--btn-red); color: white; } 
-.btn-grey { background-color: var(--btn-grey-bg); border-color: var(--btn-grey-bg); color: var(--btn-grey-text); } 
-.btn-grey:hover { background-color: #6c7a7b; opacity: 1;}
-.btn-light { background-color: var(--border-color-light); border-color: var(--border-color); color: var(--text-color); }
-.btn-light:hover { background-color: var(--border-color); opacity: 1;}
-.button-group-horizontal { display: flex; gap: var(--spacing-unit); margin-top: var(--spacing-unit); }
-.button-group-horizontal .btn-block { margin-top: 0; margin-bottom: 0; flex: 1; }
-.button-like-label { display: inline-block; padding: calc(var(--spacing-unit)*0.9) calc(var(--spacing-unit) * 1.8); font-size: 0.9em; font-weight: 500; text-align: center; border-radius: var(--border-radius-md); text-decoration: none; cursor: pointer; border: 1px solid transparent; line-height: normal; }
-
-.conges-layout-grid {
-    display: grid;
-    grid-template-columns: 260px 1fr 290px; 
-    gap: calc(var(--spacing-unit) * 1.5); 
-    align-items: start; 
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-.conges-sidebar-left, .conges-sidebar-right {
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+}
+
+body {
+    font-family: var(--font-family-sans);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: 0 var(--spacing-4);
+}
+
+main {
+    padding: var(--spacing-8) 0;
+    min-height: calc(100vh - var(--header-height));
+}
+
+body.has-fixed-header {
+    padding-top: var(--header-height);
+}
+
+/* --- Header Minimaliste --- */
+header.main-header {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+    padding: 0 var(--spacing-6);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--header-height);
     display: flex;
-    flex-direction: column;
-    gap: calc(var(--spacing-unit) * 1.5); 
-    position: relative; 
-    z-index: 10;        
-}
-.conges-sidebar-left .section, .conges-sidebar-right .section {
-    margin-bottom: 0; 
-    padding: calc(var(--spacing-unit) * 1.6); 
-}
-.conges-sidebar-left .section h2, .conges-sidebar-right .section h2,
-.conges-sidebar-left .section h3, .conges-sidebar-right .section h3 {
-    font-size: 1.05em; 
-    margin-bottom: var(--spacing-unit);
-    padding-bottom: calc(var(--spacing-unit)*0.5);
-    border-bottom: 1px solid var(--border-color-light);
-}
-.conges-sidebar-left .section h3, .conges-sidebar-right .section h3 { 
-    font-size: 0.95em;
-    color: var(--text-color-light);
-    border-bottom: none;
-    margin-top: var(--spacing-unit);
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.conges-main-calendar.section { 
-    position: relative; 
-    z-index: 5;         
-    overflow: hidden;   
-    padding: var(--spacing-unit); 
-    min-height: 300px; 
-    background-color: var(--card-bg); 
+.main-header .logo {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text-on-primary);
+    letter-spacing: -0.025em;
 }
 
-.calendar-view-title { 
-    font-size: 1.5em; 
+.main-header nav ul {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    gap: var(--spacing-1);
+}
+
+.main-header nav ul li a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+    font-size: var(--font-size-sm);
+    transition: all var(--transition);
+}
+
+.main-header nav ul li a:hover,
+.main-header nav ul li a.active {
+    color: var(--text-on-primary);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Menu mobile --- */
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-on-primary);
+    font-size: var(--font-size-xl);
+    cursor: pointer;
+    padding: var(--spacing-2);
+    border-radius: var(--border-radius-md);
+}
+
+/* --- Titres épurés --- */
+h1 {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
     color: var(--primary-color);
     text-align: center;
+    margin-bottom: var(--spacing-8);
+}
+
+/* --- Sections minimalistes --- */
+.section {
+    background-color: var(--card-bg);
+    padding: var(--spacing-6);
+    margin-bottom: var(--spacing-6);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color-light);
+}
+
+.section h2 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0 0 var(--spacing-5) 0;
+    padding-bottom: var(--spacing-3);
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+.section h3 {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: var(--spacing-5) 0 var(--spacing-3) 0;
+}
+
+.section h4 {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-color-medium);
+    margin: var(--spacing-4) 0 var(--spacing-2) 0;
+}
+
+.section h5 {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-color-medium);
+    margin: var(--spacing-3) 0 var(--spacing-2) 0;
+}
+
+/* --- Formulaires épurés --- */
+.form-group {
+    margin-bottom: var(--spacing-4);
+}
+
+.form-group label {
+    display: block;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-color-medium);
+    margin-bottom: var(--spacing-2);
+}
+
+input[type="text"],
+input[type="number"],
+input[type="week"],
+input[type="date"],
+input[type="time"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+    width: 100%;
+    padding: var(--spacing-3);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-base);
+    font-family: inherit;
+    background-color: var(--surface);
+    color: var(--text-color);
+    transition: border-color var(--transition), box-shadow var(--transition);
+    outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--border-color-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+input::placeholder {
+    color: var(--text-color-light);
+}
+
+textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.form-inline-flex {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--spacing-4);
+}
+
+.form-inline-flex .form-group {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 180px;
+}
+
+/* --- Boutons minimalistes --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-3) var(--spacing-5);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    font-family: inherit;
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: all var(--transition);
+    outline: none;
+    white-space: nowrap;
+    user-select: none;
+    min-height: 40px;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Variantes de boutons */
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: var(--text-on-secondary);
+    border-color: var(--secondary-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-dark);
+    border-color: var(--secondary-dark);
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    color: white;
+    border-color: var(--success-color);
+}
+
+.btn-danger {
+    background-color: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.btn-export, .btn-import.button-like-label {
+    background-color: var(--warning-color);
+    color: white;
+    border-color: var(--warning-color);
+}
+
+.btn-print {
+    background-color: var(--success-color);
+    color: white;
+    border-color: var(--success-color);
+}
+
+.btn-grey {
+    background-color: var(--btn-grey-bg);
+    color: var(--btn-grey-text);
+    border-color: var(--btn-grey-bg);
+}
+
+.btn-light {
+    background-color: var(--surface);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+.btn-light:hover {
+    background-color: var(--bg-secondary);
+}
+
+/* Tailles de boutons */
+.btn-sm {
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-sm);
+    min-height: 32px;
+}
+
+.btn-xs {
+    padding: var(--spacing-1) var(--spacing-3);
+    font-size: var(--font-size-xs);
+    min-height: 28px;
+}
+
+.btn-block {
+    display: flex;
+    width: 100%;
+    margin: var(--spacing-2) 0;
+}
+
+.button-like-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-3) var(--spacing-5);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    min-height: 40px;
+}
+
+/* Groupes de boutons */
+.button-group {
+    display: flex;
+    gap: var(--spacing-3);
+    margin-top: var(--spacing-4);
+}
+
+.button-group-horizontal {
+    display: flex;
+    gap: var(--spacing-3);
+    margin-top: var(--spacing-4);
+}
+
+.button-group-horizontal .btn-block {
+    margin: 0;
+    flex: 1;
+}
+
+/* --- Cards épurées --- */
+.card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color-light);
+    overflow: hidden;
+    padding: var(--spacing-6);
+}
+
+/* --- Layout Congés Amélioré --- */
+.conges-layout-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr 280px;
+    grid-template-rows: auto auto;
+    gap: var(--spacing-4);
+    align-items: start;
+}
+
+.conges-sidebar-left {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.conges-main-calendar {
+    grid-column: 2;
+    grid-row: 1;
+    padding: var(--spacing-5);
+    min-height: 400px;
+}
+
+.conges-sidebar-right {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+/* Section gestion des droits & soldes déplacée sous le calendrier */
+#gestionDroitsSoldesSection {
+    grid-column: 1 / -1;
+    grid-row: 2;
     margin-top: 0;
-    margin-bottom: var(--spacing-unit); 
-    padding-bottom: calc(var(--spacing-unit)*0.6);
+}
+
+/* Styles améliorés pour les colonnes latérales */
+.conges-sidebar-left .section,
+.conges-sidebar-right .section {
+    margin-bottom: 0;
+    padding: var(--spacing-4);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.conges-sidebar-left .section h2,
+.conges-sidebar-right .section h2 {
+    font-size: 0.95rem;
+    margin-bottom: var(--spacing-3);
+    padding-bottom: var(--spacing-2);
+    font-weight: 600;
+}
+
+.conges-sidebar-left .section h3,
+.conges-sidebar-right .section h3 {
+    font-size: 0.85rem;
+    margin: var(--spacing-3) 0 var(--spacing-2) 0;
+    font-weight: 600;
+}
+
+.conges-sidebar-left .form-group,
+.conges-sidebar-right .form-group {
+    margin-bottom: var(--spacing-3);
+}
+
+.conges-sidebar-left .form-group label,
+.conges-sidebar-right .form-group label {
+    font-size: 0.75rem;
+    margin-bottom: var(--spacing-2);
+    font-weight: 500;
+    color: var(--text-color-medium);
+}
+
+.conges-sidebar-left input,
+.conges-sidebar-left select,
+.conges-sidebar-right input,
+.conges-sidebar-right select,
+.conges-sidebar-left textarea,
+.conges-sidebar-right textarea {
+    padding: var(--spacing-2);
+    font-size: 0.8rem;
+    border-radius: var(--border-radius-sm);
+    height: auto;
+    min-height: 30px;
+}
+
+.conges-sidebar-left .btn,
+.conges-sidebar-right .btn {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: 0.75rem;
+    min-height: 30px;
+    font-weight: 500;
+}
+
+.conges-sidebar-left .btn-block,
+.conges-sidebar-right .btn-block {
+    margin: var(--spacing-2) 0;
+}
+
+.conges-sidebar-left .button-group-horizontal,
+.conges-sidebar-right .button-group-horizontal {
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-3);
+}
+
+/* Styles spéciaux pour les éléments spécifiques des colonnes latérales */
+#controlesSauvegardeSection #controleAnneeDebut {
+    padding: var(--spacing-2);
+    font-size: 0.8rem;
+    height: 30px;
+    width: 70px;
+}
+
+#controlesSauvegardeSection #periodeAffichee {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.8rem;
+    padding-left: var(--spacing-2);
+}
+
+#saisieAbsencesSection input[type="date"],
+#saisieAbsencesSection select {
+    font-size: 0.8rem;
+    padding: var(--spacing-2);
+    height: 30px;
+}
+
+/* Table des soldes avec meilleure lisibilité */
+#soldesPeriodeTable {
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    font-size: 0.75rem;
+}
+
+#soldesPeriodeTable th {
+    background-color: var(--bg-secondary);
+    color: var(--text-color-medium);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    padding: var(--spacing-2);
+}
+
+#soldesPeriodeTable td {
+    font-weight: 500;
+    color: var(--text-color);
+    padding: var(--spacing-2);
+}
+
+#soldesPeriodeTable th:nth-child(2),
+#soldesPeriodeTable td:nth-child(2),
+#soldesPeriodeTable th:nth-child(3),
+#soldesPeriodeTable td:nth-child(3),
+#soldesPeriodeTable th:nth-child(4),
+#soldesPeriodeTable td:nth-child(4) {
+    text-align: center;
+    font-family: var(--font-family-mono);
+}
+
+/* Légende améliorée */
+.legend-section {
+    background-color: var(--bg-secondary);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--text-color-medium);
+    padding: var(--spacing-2);
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 2px;
+    line-height: 1.3;
+}
+
+.legend-color-box {
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--border-color);
+    margin-right: var(--spacing-2);
+    border-radius: var(--border-radius-sm);
+    flex-shrink: 0;
+}
+
+.legend-color-box.color-weekend {
+    background-color: #f0f0f0;
+    border-color: #e0e0e0;
+}
+
+.legend-color-box.color-holiday {
+    background-color: #fffacd;
+    border-color: #ffe37a;
+}
+
+/* Textarea observations avec meilleure taille */
+#observationsTextarea {
+    min-height: 60px;
+    font-size: 0.8rem;
+    padding: var(--spacing-2);
+    line-height: 1.4;
+}
+
+.calendar-view-title {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--primary-color);
+    text-align: center;
+    margin: 0 0 var(--spacing-5) 0;
+    padding-bottom: var(--spacing-3);
     border-bottom: 1px solid var(--border-color);
 }
 
-#controlesSauvegardeSection #controleAnneeDebut { padding: calc(var(--spacing-unit)*0.65); font-size: 0.88em; height: 34px; }
-#controlesSauvegardeSection #periodeAffichee { font-weight: bold; color: var(--text-color); font-size: 0.92em; padding-left: calc(var(--spacing-unit)*0.6); }
-#controlesSauvegardeSection .form-group label { font-size: 0.88em; }
-
-.legend-section #congesLegendContainer { display: flex; flex-direction: column; gap: calc(var(--spacing-unit) * 0.5); }
-.legend-item { display: flex; align-items: center; font-size: 0.82em; color: var(--text-color); }
-.legend-color-box { width: 12px; height: 12px; border: 1px solid #bbb; margin-right: calc(var(--spacing-unit) * 0.65); display: inline-block; border-radius: 2px; flex-shrink: 0; }
-.legend-color-box.color-weekend { background-color: #f0f0f0; border-color: #e0e0e0; } 
-.legend-color-box.color-holiday { background-color: #fffacd; border-color: #ffe37a; }
-
-#saisieAbsencesSection input[type="date"], #saisieAbsencesSection select { font-size: 0.88em; padding: calc(var(--spacing-unit)*0.65); height: 34px; }
-#saisieAbsencesSection .form-group label { font-size: 0.88em; }
-#saisieAbsencesSection .btn { padding: calc(var(--spacing-unit)*0.75) calc(var(--spacing-unit) * 1.3); font-size: 0.88em;}
-
-#soldesPeriodeTable { width: 100%; border-collapse: collapse; font-size: 0.82em; }
-#soldesPeriodeTable th, #soldesPeriodeTable td { border: 1px solid var(--border-color); padding: calc(var(--spacing-unit) * 0.55) calc(var(--spacing-unit)*0.8); text-align: left; }
-#soldesPeriodeTable th { background-color: #f0f2f5; font-weight: bold; white-space: nowrap; color: var(--text-color); }
-#soldesPeriodeTable th:nth-child(2), #soldesPeriodeTable td:nth-child(2),
-#soldesPeriodeTable th:nth-child(3), #soldesPeriodeTable td:nth-child(3),
-#soldesPeriodeTable th:nth-child(4), #soldesPeriodeTable td:nth-child(4) { text-align: center; }
-
-/* Styles pour Paramétrage Types Congés (compact) */
-#leaveTypesConfigContentWrapper { 
-    border-top: 1px solid var(--border-color); 
-    padding-top: calc(var(--spacing-unit)*0.8);
-    /* overflow-x: auto;  Supprimé pour viser l'absence de scroll */
-}
-#leaveTypesConfigContentWrapper .table-wrapper {
-    /* overflow-x: auto; Supprimé */
-    margin-bottom: var(--spacing-unit); 
-}
-#leaveTypesConfigTable { 
-    width: 100%; 
-    font-size: calc(var(--font-size-xs) * 0.90); 
-    border-collapse: collapse; 
-} 
-#leaveTypesConfigTable th, 
-#leaveTypesConfigTable td { 
-    padding: calc(var(--spacing-unit)*0.4) calc(var(--spacing-unit)*0.5); 
-    white-space: normal; 
-    text-align: left;
-    border-bottom: 1px solid var(--border-color-light); 
-}
-#leaveTypesConfigTable th {
-    font-weight: 600; 
-    background-color: #f9f9f9; 
-}
-#leaveTypesConfigTable th:nth-child(1), /* Code */
-#leaveTypesConfigTable td:nth-child(1) {
-    width: 15%; 
-    white-space: nowrap; 
-}
-#leaveTypesConfigTable th:nth-child(2), /* Libellé */
-#leaveTypesConfigTable td:nth-child(2) {
-    width: 40%; /* Plus de place pour le libellé */
-}
-#leaveTypesConfigTable th:nth-child(3), /* Pastille Couleur */
-#leaveTypesConfigTable td:nth-child(3) {
-    width: 10%;
-    text-align: center; 
-}
-#leaveTypesConfigTable th:nth-child(4), /* Droits/An */
-#leaveTypesConfigTable td:nth-child(4) {
-    width: 15%;
-    text-align: center;
-}
-#leaveTypesConfigTable th:nth-child(5), /* Actions */
-#leaveTypesConfigTable td:nth-child(5) {
-    width: 20%; /* Réduit car boutons plus petits */
-    text-align: right; 
-}
-#leaveTypesConfigTable .legend-color-box {
-    margin: 0 auto; 
-}
-
-/* Boutons plus petits pour la table de configuration */
-.btn-xs {
-    padding: calc(var(--spacing-unit)*0.3) calc(var(--spacing-unit)*0.6);
-    font-size: calc(var(--font-size-xs) * 0.9);
-    border-radius: var(--border-radius-sm);
-}
-
-#leaveTypesConfigContentWrapper h4 { font-size: 0.98em; color: var(--primary-color); margin-bottom: calc(var(--spacing-unit)*0.8); border-bottom: none; }
-#leaveTypesConfigContentWrapper h5 { font-size: 0.88em; color: var(--text-color-light); margin-bottom: calc(var(--spacing-unit)*0.45); }
-#leaveTypeConfigForm .form-group { margin-bottom: calc(var(--spacing-unit)*0.8); } 
-#leaveTypeConfigForm .form-group label { font-size: calc(var(--font-size-xs)*0.92); margin-bottom: 2px;}
-#leaveTypeConfigForm input, #leaveTypeConfigForm select { font-size: calc(var(--font-size-xs)*0.92); padding: calc(var(--spacing-unit)*0.4); }
-#leaveTypeConfigForm input[type="color"] { padding: 1px; height: 25px; }
-#leaveTypeConfigForm .btn-sm {padding: calc(var(--spacing-unit)*0.55) var(--spacing-unit); font-size: 0.82em; }
-
-
-/* Calendrier Annuel */
+/* --- Calendrier annuel (4 mois par ligne) --- */
 .annual-calendar-placeholder {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); 
-    gap: var(--spacing-unit); 
-    padding: 0; 
-    background-color: transparent; 
-    border-radius: var(--border-radius-sm);
-    visibility: visible; 
-    opacity: 1; 
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-3);
+    padding: 0;
 }
+
 .mini-month-placeholder {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color); 
-    border-radius: var(--border-radius-sm);
-    padding: calc(var(--spacing-unit)*0.6); 
-    box-shadow: none; 
-    min-width: 0; 
-    overflow: hidden; 
+    background-color: var(--surface);
+    border: 1px solid var(--border-color-light);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-2);
+    transition: all var(--transition);
 }
-.mini-month-placeholder h4 { 
+
+.mini-month-placeholder:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.mini-month-placeholder h4 {
     text-align: center;
-    margin: 0 0 calc(var(--spacing-unit)*0.5) 0; 
-    font-size: 0.85em; 
-    font-weight: 500; 
-    color: var(--text-color);
-    white-space: nowrap; 
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin: 0 0 var(--spacing-2) 0;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--primary-color);
 }
+
 .mini-month-placeholder table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.7em; 
-    table-layout: fixed; 
+    font-size: 0.65rem;
 }
-.mini-month-placeholder th { 
+
+.mini-month-placeholder th {
     text-align: center;
-    padding: calc(var(--spacing-unit)*0.15) 0; 
-    font-weight: normal;
+    padding: var(--spacing-1) 0;
+    font-weight: 500;
     color: var(--text-color-light);
+    font-size: 0.6rem;
 }
+
 .mini-month-placeholder td {
     text-align: center;
     vertical-align: middle;
-    border: none; 
-    padding: 0; 
-    height: 20px; 
+    padding: 0;
+    height: 20px;
 }
+
 .mini-day-cell {
-    width: 100%; 
-    height: 100%; 
-    line-height: 20px; 
-    border-radius: 2px; 
-    cursor: default;
-    display: flex; 
+    width: 100%;
+    height: 100%;
+    display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: var(--border-radius-sm);
+    cursor: default;
     color: var(--text-color);
-    position: relative;
-    font-size: 0.95em; 
+    font-weight: 500;
+    transition: all var(--transition);
+    font-size: 0.65rem;
 }
-.mini-day-cell.other-month { color: #d0d0d0; background-color: transparent !important; font-weight: normal; }
-.mini-day-cell.weekend { background-color: #f0f0f0; color: #999; }
-.mini-day-cell.holiday { background-color: #fffacd; font-weight: 500; color: #8B4513; }
-.mini-day-cell.holiday.weekend { background-color: #fffacd; color: #8B4513; }
-.mini-day-cell[style*="background-color"] { font-weight: 500; }
-.mini-day-cell[style*="border-style: dashed"] { box-shadow: inset 0 0 0 1px currentColor; }
 
-/* Styles pour le contenu à afficher/masquer (comme la notice ou les params) */
+.mini-day-cell:hover {
+    background-color: var(--bg-secondary);
+}
+
+.mini-day-cell.other-month {
+    color: var(--text-color-light);
+    font-weight: 400;
+}
+
+.mini-day-cell.weekend {
+    background-color: var(--bg-tertiary);
+    color: var(--text-color-medium);
+}
+
+.mini-day-cell.holiday {
+    background-color: #fef3c7;
+    color: #92400e;
+    font-weight: 600;
+}
+
+/* --- STYLES SPÉCIAUX FICHES HORAIRES (STRUCTURE EXACTE DU FICHIER TEXTE) --- */
+.timesheet-page-container {
+    max-width: 100%;
+}
+
+.timesheet-controls {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-5);
+    margin-bottom: var(--spacing-6);
+    box-shadow: var(--shadow-md);
+}
+
+.timesheet-controls h2 {
+    color: white;
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+    margin-bottom: var(--spacing-4);
+    font-weight: 600;
+}
+
+.timesheet-controls .form-group label {
+    color: white;
+    font-weight: 600;
+    font-size: var(--font-size-base);
+}
+
+.timesheet-controls input,
+.timesheet-controls select {
+    background-color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: var(--font-size-base);
+}
+
+.timesheet-controls input:focus,
+.timesheet-controls select:focus {
+    background-color: white;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    color: var(--text-color);
+}
+
+.time-input {
+    font-family: var(--font-family-mono) !important;
+    font-weight: 600;
+    text-align: center;
+    max-width: 80px;
+}
+
+/* === STYLES EXACTS POUR LES FICHES HORAIRES - REPRODUCTION DU FICHIER TEXTE === */
+.timesheet-header {
+    display: block;
+    margin-bottom: calc(var(--spacing-4) * 2);
+    padding-bottom: calc(var(--spacing-4) * 1.5);
+    border-bottom: 1px solid #777 !important;
+    font-size: 0.8em;
+}
+
+.timesheet-header .user-info div {
+    margin-bottom: calc(var(--spacing-2));
+    display: flex;
+    align-items: baseline;
+}
+
+.timesheet-header .user-info strong {
+    margin-right: 5px;
+    white-space: nowrap;
+    color: var(--text-color);
+}
+
+.user-info-input {
+    border: none !important;
+    padding: 1px 0;
+    font-size: 1em;
+    background-color: transparent !important;
+    width: auto;
+    min-width: 100px;
+    color: var(--text-color);
+}
+
+.user-info-input.name-input {
+    min-width: 200px;
+}
+
+.user-info-input.agent-id-input {
+    min-width: 80px;
+}
+
+.timesheet-header .week-info {
+    text-align: left;
+    margin-top: calc(var(--spacing-4) * 4);
+    padding-left: calc(80px + 3px + var(--spacing-4));
+}
+
+.timesheet-header .week-info div {
+    margin-bottom: calc(var(--spacing-2) * 0.25);
+    color: var(--text-color);
+}
+
+.table-wrapper {
+    border: none !important;
+    margin-top: calc(var(--spacing-4) * 1);
+    margin-bottom: calc(var(--spacing-4) * 2);
+}
+
+#timesheetTable {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #777 !important;
+    font-size: 0.9em !important;
+    background: white;
+}
+
+#timesheetTable th,
+#timesheetTable td {
+    border-left: 1px solid #777 !important;
+    border-right: 1px solid #777 !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    padding: 2px !important;
+    text-align: center;
+    vertical-align: middle;
+    height: 20px;
+}
+
+#timesheetTable thead tr th,
+#timesheetTable tfoot tr td {
+    border-top: 1px solid #777 !important;
+    border-bottom: 1px solid #777 !important;
+}
+
+#timesheetTable thead tr:first-child th {
+    border-top: 1px solid #777 !important;
+}
+
+#timesheetTable tbody tr td:nth-child(16) {
+    border-top: 1px solid #777 !important;
+    border-bottom: 1px solid #777 !important;
+}
+
+/* Styles pour fusionner visuellement les colonnes heures/minutes */
+#timesheetTable td:nth-child(2),
+#timesheetTable thead tr:nth-child(2) th:nth-child(1),
+#timesheetTable td:nth-child(4),
+#timesheetTable thead tr:nth-child(2) th:nth-child(3),
+#timesheetTable td:nth-child(6),
+#timesheetTable thead tr:nth-child(2) th:nth-child(5),
+#timesheetTable td:nth-child(8),
+#timesheetTable thead tr:nth-child(2) th:nth-child(7),
+#timesheetTable td:nth-child(10),
+#timesheetTable thead tr:nth-child(2) th:nth-child(9),
+#timesheetTable td:nth-child(12),
+#timesheetTable thead tr:nth-child(2) th:nth-child(11),
+#timesheetTable td:nth-child(14),
+#timesheetTable thead tr:nth-child(2) th:nth-child(13) {
+    border-right-style: none !important;
+    padding-right: 1px !important;
+}
+
+#timesheetTable td:nth-child(3),
+#timesheetTable thead tr:nth-child(2) th:nth-child(2),
+#timesheetTable td:nth-child(5),
+#timesheetTable thead tr:nth-child(2) th:nth-child(4),
+#timesheetTable td:nth-child(7),
+#timesheetTable thead tr:nth-child(2) th:nth-child(6),
+#timesheetTable td:nth-child(9),
+#timesheetTable thead tr:nth-child(2) th:nth-child(8),
+#timesheetTable td:nth-child(11),
+#timesheetTable thead tr:nth-child(2) th:nth-child(10),
+#timesheetTable td:nth-child(13),
+#timesheetTable thead tr:nth-child(2) th:nth-child(12),
+#timesheetTable td:nth-child(15),
+#timesheetTable thead tr:nth-child(2) th:nth-child(14) {
+    border-left-style: none !important;
+    padding-left: 1px !important;
+}
+
+#timesheetTable thead th.editable-prev-cumul-header {
+    background-color: white !important;
+    padding: 1px !important;
+}
+
+#prevWeekCumulInput.prev-cumul-input {
+    width: calc(100% - 2px) !important;
+    height: calc(100% - 2px) !important;
+    text-align: center !important;
+    border: 1px solid #ccc !important;
+    padding: 0 !important;
+    font-size: 0.9em !important;
+    box-sizing: border-box;
+    margin: 0;
+    vertical-align: middle;
+    font-family: var(--font-family-mono);
+    background: white !important;
+    color: var(--text-color) !important;
+}
+
+#timesheetTable thead th {
+    background-color: #D0D0E8 !important;
+    color: var(--text-color) !important;
+    font-weight: 600;
+}
+
+#timesheetTable thead th.sub-header-time {
+    font-size: 0.85em;
+    font-weight: normal;
+    width: 20px !important;
+    min-width: 20px !important;
+    max-width: 20px !important;
+    background-color: #D0D0E8 !important;
+}
+
+#timesheetTable thead th#headerPrevWeekCumulCellContainer {
+    background-color: white !important;
+}
+
+#timesheetTable thead tr:nth-child(2) th:last-child {
+    background-color: white !important;
+}
+
+#timesheetTable thead th.header-obs {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+#timesheetTable thead th.leave-col,
+#timesheetTable thead th.absence-col {
+    background-color: #D0D0E8 !important;
+}
+
+.day-col {
+    width: 80px !important;
+    text-align: left !important;
+    font-weight: bold;
+    background-color: #D0D0E8 !important;
+    padding-left: 3px !important;
+    color: var(--text-color) !important;
+}
+
+.time-cell,
+.sub-header-time {
+    width: 20px !important;
+    min-width: 20px !important;
+    max-width: 20px !important;
+    font-family: var(--font-family-mono);
+    font-size: 1em;
+    padding: 2px !important;
+}
+
+td.time-cell-single {
+    min-width: 45px;
+    width: 45px;
+    font-weight: bold;
+    font-family: var(--font-family-mono);
+}
+
+/* Couleurs de fond spécifiques pour les colonnes */
+#timesheetTable tbody tr td:nth-child(6),
+#timesheetTable tbody tr td:nth-child(7),
+#timesheetTable tbody tr td:nth-child(12),
+#timesheetTable tbody tr td:nth-child(13) {
+    background-color: #FFFFC0 !important;
+}
+
+#timesheetTable tbody tr td:nth-child(14),
+#timesheetTable tbody tr td:nth-child(15) {
+    background-color: #B0E0E6 !important;
+}
+
+#timesheetTable tbody tr td:nth-child(16) {
+    background-color: white !important;
+}
+
+.detailed-timesheet .leave-col,
+.detailed-timesheet .absence-col {
+    background-color: white !important;
+    width: 70px !important;
+    min-width: 70px !important;
+}
+
+.detailed-timesheet .obs-col {
+    width: 120px !important;
+    text-align: left !important;
+    padding: 0 !important;
+}
+
+.detailed-timesheet .obs-input {
+    width: 100%;
+    height: 100%;
+    min-height: 18px;
+    border: none;
+    background-color: transparent;
+    text-align: left;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 1px 2px;
+    box-sizing: border-box;
+    color: var(--text-color);
+}
+
+.detailed-timesheet .obs-input:focus {
+    background-color: #fff;
+    outline: 1px solid var(--secondary-color);
+}
+
+.detailed-timesheet .positive-time {
+    color: #00B050 !important;
+}
+
+.detailed-timesheet .negative-time {
+    color: #FF0000 !important;
+}
+
+.detailed-timesheet tbody tr:hover td {
+    background-color: #E7F5FE;
+}
+
+.detailed-timesheet tfoot tr {
+    background-color: white;
+}
+
+.detailed-timesheet tfoot tr.total-row td {
+    font-weight: bold;
+    color: var(--primary-color);
+    height: 22px;
+    background-color: white !important;
+}
+
+.detailed-timesheet tfoot tr.total-row td.label-cell {
+    text-align: right !important;
+    padding-right: 10px !important;
+    font-weight: bold;
+    border-right: 1px solid #777 !important;
+}
+
+.detailed-timesheet tfoot tr.total-row #weekTotalNetCumul {
+    background-color: white !important;
+    color: var(--primary-color);
+    text-align: center !important;
+    border-left: 1px solid #777 !important;
+    border-right: 1px solid #777 !important;
+}
+
+.detailed-timesheet tfoot tr.total-row td:last-child {
+    border-left: 1px solid #777 !important;
+}
+
+.editable-timesheet tbody td input.editable-cell-input {
+    width: 95%;
+    height: 16px;
+    line-height: 16px;
+    border: none;
+    background-color: transparent;
+    text-align: center;
+    font-family: var(--font-family-mono);
+    font-size: 1em;
+    padding: 0;
+    margin: 0 auto;
+    box-sizing: border-box;
+    appearance: textfield;
+    -moz-appearance: textfield;
+    color: var(--text-color);
+}
+
+.editable-timesheet tbody td input.editable-cell-input::-webkit-outer-spin-button,
+.editable-timesheet tbody td input.editable-cell-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.editable-timesheet tbody td input.editable-cell-input:focus {
+    background-color: #fff;
+    outline: 1px solid var(--secondary-color);
+}
+
+.timesheet-footer {
+    margin-top: calc(var(--spacing-4) * 3);
+    padding-top: calc(var(--spacing-4) * 2);
+    border-top: 1px solid #777 !important;
+    font-size: 0.8em;
+}
+
+.timesheet-footer::before {
+    display: none !important;
+}
+
+.timesheet-footer .signature-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: calc(var(--spacing-4) * 1.5);
+    padding-top: 0;
+    border-top: none !important;
+}
+
+.timesheet-footer .signature-block {
+    width: 100%;
+    display: flex;
+    align-items: baseline;
+    border: none !important;
+}
+
+.timesheet-footer .signature-date-label {
+    font-weight: bold;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+    min-width: 180px;
+    flex-shrink: 0;
+    border: none !important;
+    color: var(--text-color);
+}
+
+.timesheet-footer .signature-date-label .signature-actual-date {
+    font-weight: normal;
+    margin-left: calc(var(--spacing-2));
+    border: none !important;
+    color: var(--text-color);
+}
+
+.timesheet-footer .signature-text-label {
+    text-align: left;
+    border: none !important;
+    padding: 0;
+    margin: 0;
+    min-height: 1.5em;
+    margin-left: calc(var(--spacing-4) * 2);
+    color: var(--text-color);
+}
+
+/* --- Configuration des types de congés sous le calendrier --- */
+#leaveTypesConfigContentWrapper {
+    border-top: 1px solid var(--border-color);
+    padding-top: var(--spacing-4);
+    margin-top: var(--spacing-4);
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-4);
+}
+
+#leaveTypesConfigContentWrapper h4 {
+    font-size: var(--font-size-sm);
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-3);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--spacing-2);
+}
+
+#leaveTypesConfigContentWrapper h5 {
+    font-size: var(--font-size-xs);
+    color: var(--text-color-medium);
+    margin: var(--spacing-3) 0 var(--spacing-2) 0;
+    font-weight: 600;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    margin-bottom: var(--spacing-3);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color-light);
+}
+
+#leaveTypesConfigTable {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
+    font-size: var(--font-size-xs);
+    background-color: white;
+}
+
+#leaveTypesConfigTable th {
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: var(--spacing-2);
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+}
+
+#leaveTypesConfigTable td {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-bottom: 1px solid var(--border-color-light);
+    vertical-align: middle;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+#leaveTypesConfigTable tbody tr:hover {
+    background-color: var(--bg-secondary);
+}
+
+/* Colonnes spécifiques */
+#leaveTypesConfigTable th:nth-child(1),
+#leaveTypesConfigTable td:nth-child(1) {
+    width: 70px;
+    font-family: var(--font-family-mono);
+    font-weight: 600;
+}
+
+#leaveTypesConfigTable th:nth-child(2),
+#leaveTypesConfigTable td:nth-child(2) {
+    width: auto;
+    min-width: 120px;
+}
+
+#leaveTypesConfigTable th:nth-child(3),
+#leaveTypesConfigTable td:nth-child(3) {
+    width: 50px;
+    text-align: center;
+}
+
+#leaveTypesConfigTable th:nth-child(4),
+#leaveTypesConfigTable td:nth-child(4) {
+    width: 70px;
+    text-align: center;
+    font-family: var(--font-family-mono);
+    font-weight: 600;
+}
+
+#leaveTypesConfigTable th:nth-child(5),
+#leaveTypesConfigTable td:nth-child(5) {
+    width: 100px;
+    text-align: right;
+}
+
+/* Formulaire de configuration compact */
+#leaveTypeConfigForm {
+    background-color: white;
+    padding: var(--spacing-3);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color-light);
+    margin-top: var(--spacing-3);
+}
+
+#leaveTypeConfigForm .form-group {
+    margin-bottom: var(--spacing-2);
+}
+
+#leaveTypeConfigForm .form-group label {
+    font-size: var(--font-size-xs);
+    margin-bottom: var(--spacing-1);
+    color: var(--text-color-medium);
+    font-weight: 600;
+}
+
+#leaveTypeConfigForm input,
+#leaveTypeConfigForm select {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-1);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+}
+
+#leaveTypeConfigForm input[type="color"] {
+    padding: 1px;
+    height: 28px;
+    width: 50px;
+}
+
+#leaveTypeConfigForm .button-group {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-3);
+}
+
+/* --- Tables épurées --- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--surface);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+th, td {
+    padding: var(--spacing-3);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+th {
+    background-color: var(--bg-secondary);
+    font-weight: 600;
+    color: var(--text-color-medium);
+    font-size: var(--font-size-sm);
+}
+
+tbody tr:hover {
+    background-color: var(--bg-secondary);
+}
+
+/* --- Toast notifications --- */
+#toast-container {
+    position: fixed;
+    bottom: var(--spacing-6);
+    right: var(--spacing-6);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.toast {
+    min-width: 300px;
+    max-width: 400px;
+    background-color: var(--surface);
+    color: var(--text-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-4);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    animation: slideIn 0.3s ease-out;
+    border-left: 4px solid var(--border-color);
+}
+
+.toast.success { border-left-color: var(--success-color); }
+.toast.error { border-left-color: var(--accent-color); }
+.toast.info { border-left-color: var(--info-color); }
+.toast.warning { border-left-color: var(--warning-color); }
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* --- Styles spécifiques Pointage --- */
+.pointage-actions .form-group {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color-light);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-5);
+    margin-bottom: var(--spacing-4);
+}
+
+.pointage-actions .form-group label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-color-medium);
+    margin-bottom: var(--spacing-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.pointage-actions .form-group strong {
+    display: block;
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-3);
+    font-family: var(--font-family-mono);
+}
+
+/* --- Import/Export controls --- */
+.import-export-controls {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color-light);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-5);
+    margin-top: var(--spacing-6);
+}
+
+.import-export-controls h3 {
+    margin: 0 0 var(--spacing-4) 0;
+    color: var(--primary-color);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+}
+
+.import-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+#importJsonInput {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* --- Styles pour la page de connexion --- */
+.login-container {
+    max-width: 400px;
+    margin: var(--spacing-16) auto;
+    background-color: var(--surface);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color-light);
+    overflow: hidden;
+}
+
+.login-container h1 {
+    text-align: center;
+    margin-bottom: var(--spacing-6);
+    color: var(--primary-color);
+}
+
+/* --- Contenu à basculer --- */
 .toggle-content {
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-relaxed);
+    color: var(--text-color-medium);
+    background-color: var(--bg-secondary);
+    padding: var(--spacing-3);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color-light);
+}
+
+/* --- Table des fiches de frais --- */
+#expenseReportsTable {
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+#expenseReportsTable th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: var(--font-size-sm);
+}
+
+#expenseReportsTable tbody tr:hover {
+    background-color: var(--bg-secondary);
+}
+
+/* --- Sections spécifiques pour autres pages --- */
+.welcome-section,
+.quick-access-section,
+.new-expense-report-section,
+.expense-reports-history-section {
+    /* Hérite des styles .section de base */
+}
+
+.quick-access-section .button-group {
+    display: flex;
+    gap: var(--spacing-3);
+    flex-wrap: wrap;
+    margin-top: var(--spacing-4);
+}
+
+.quick-access-section .button-group .btn {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* --- Éléments génériques supplémentaires --- */
+ul, ol {
+    padding-left: var(--spacing-5);
+    margin-bottom: var(--spacing-4);
+}
+
+li {
+    margin-bottom: var(--spacing-1);
+}
+
+a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color var(--transition);
+}
+
+a:hover {
+    color: var(--secondary-dark);
+    text-decoration: underline;
+}
+
+code {
+    background-color: var(--bg-secondary);
+    color: var(--text-color);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--border-radius-sm);
+    font-family: var(--font-family-mono);
     font-size: 0.9em;
-    line-height: 1.5;
+}
+
+pre {
+    background-color: var(--bg-secondary);
+    color: var(--text-color);
+    padding: var(--spacing-4);
+    border-radius: var(--border-radius-md);
+    overflow-x: auto;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: var(--spacing-6) 0;
+}
+
+/* --- Classes utilitaires --- */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color-light);
+    border-radius: 50%;
+    border-top-color: var(--secondary-color);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.notification {
+    padding: var(--spacing-3);
+    border-radius: var(--border-radius-md);
+    margin-bottom: var(--spacing-4);
+    border-left: 4px solid;
+}
+
+.notification.info {
+    background-color: rgba(8, 145, 178, 0.1);
+    border-left-color: var(--info-color);
+    color: var(--info-color);
+}
+
+.notification.success {
+    background-color: rgba(5, 150, 105, 0.1);
+    border-left-color: var(--success-color);
+    color: var(--success-color);
+}
+
+.notification.warning {
+    background-color: rgba(217, 119, 6, 0.1);
+    border-left-color: var(--warning-color);
+    color: var(--warning-color);
+}
+
+.notification.error {
+    background-color: rgba(220, 38, 38, 0.1);
+    border-left-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.badge {
+    display: inline-block;
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    border-radius: var(--border-radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge-primary {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+}
+
+.badge-secondary {
+    background-color: var(--secondary-color);
+    color: var(--text-on-secondary);
+}
+
+.badge-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.badge-danger {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal {
+    background-color: var(--surface);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+    padding: var(--spacing-6);
+}
+
+/* --- Styles Responsive --- */
+@media (max-width: 1200px) {
+    .conges-layout-grid {
+        grid-template-columns: 250px 1fr 250px;
+        gap: var(--spacing-3);
+    }
+    
+    .container {
+        padding: 0 var(--spacing-3);
+    }
+    
+    .annual-calendar-placeholder {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-2);
+    }
+}
+
+@media (max-width: 992px) {
+    .conges-layout-grid {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-4);
+    }
+    
+    .conges-sidebar-left {
+        order: 1;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-3);
+    }
+    
+    .conges-main-calendar {
+        order: 2;
+    }
+    
+    .conges-sidebar-right {
+        order: 3;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-3);
+    }
+    
+    #gestionDroitsSoldesSection {
+        order: 4;
+        grid-column: auto;
+        grid-row: auto;
+    }
+    
+    .annual-calendar-placeholder {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-2);
+    }
+    
+    /* Colonnes latérales retournent à la taille normale sur tablette */
+    .conges-sidebar-left .section,
+    .conges-sidebar-right .section {
+        padding: var(--spacing-4);
+        font-size: var(--font-size-sm);
+    }
+    
+    .conges-sidebar-left .section h2,
+    .conges-sidebar-right .section h2,
+    .conges-sidebar-left .section h3,
+    .conges-sidebar-right .section h3 {
+        font-size: var(--font-size-base);
+    }
+    
+    .conges-sidebar-left .form-group label,
+    .conges-sidebar-right .form-group label {
+        font-size: var(--font-size-sm);
+    }
+    
+    .conges-sidebar-left input,
+    .conges-sidebar-left select,
+    .conges-sidebar-right input,
+    .conges-sidebar-right select,
+    .conges-sidebar-left textarea,
+    .conges-sidebar-right textarea {
+        font-size: var(--font-size-sm);
+        padding: var(--spacing-2);
+    }
+    
+    .conges-sidebar-left .btn,
+    .conges-sidebar-right .btn {
+        font-size: var(--font-size-sm);
+        padding: var(--spacing-2) var(--spacing-3);
+        min-height: 32px;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --header-height: 56px;
+    }
+    
+    .main-header {
+        padding: 0 var(--spacing-4);
+    }
+    
+    .main-header nav {
+        display: none;
+    }
+    
+    .mobile-menu-toggle {
+        display: block;
+    }
+    
+    .main-header nav.mobile-open {
+        display: block;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: var(--primary-color);
+        padding: var(--spacing-4);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .main-header nav.mobile-open ul {
+        flex-direction: column;
+        gap: var(--spacing-2);
+    }
+    
+    .main-header nav.mobile-open ul li a {
+        padding: var(--spacing-3);
+        border-radius: var(--border-radius-md);
+        display: block;
+    }
+    
+    .section {
+        padding: var(--spacing-4);
+        margin-bottom: var(--spacing-4);
+    }
+    
+    .form-inline-flex {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .form-inline-flex .form-group {
+        min-width: auto;
+    }
+    
+    .button-group-horizontal {
+        flex-direction: column;
+    }
+    
+    .quick-access-section .button-group {
+        flex-direction: column;
+    }
+    
+    .quick-access-section .button-group .btn {
+        min-width: auto;
+    }
+    
+    .annual-calendar-placeholder {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-2);
+    }
+    
+    h1 {
+        font-size: var(--font-size-xl);
+        margin-bottom: var(--spacing-6);
+    }
+    
+    .toast {
+        min-width: auto;
+        width: calc(100vw - var(--spacing-8));
+        margin: 0 var(--spacing-4);
+    }
+    
+    #toast-container {
+        bottom: var(--spacing-4);
+        right: var(--spacing-4);
+        left: var(--spacing-4);
+    }
+    
+    #leaveTypesConfigTable {
+        min-width: 500px;
+        font-size: 0.65rem;
+    }
+    
+    #leaveTypesConfigTable th,
+    #leaveTypesConfigTable td {
+        padding: var(--spacing-1);
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 var(--spacing-2);
+    }
+    
+    .section {
+        padding: var(--spacing-3);
+    }
+    
+    .annual-calendar-placeholder {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-2);
+    }
+    
+    .mini-month-placeholder {
+        padding: var(--spacing-2);
+    }
+    
+    .btn {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: var(--font-size-sm);
+    }
+    
+    .btn-sm {
+        padding: var(--spacing-1) var(--spacing-2);
+        font-size: var(--font-size-xs);
+    }
+    
+    #leaveTypesConfigContentWrapper {
+        padding: var(--spacing-2);
+    }
+    
+    #leaveTypesConfigTable {
+        min-width: 400px;
+    }
+    
+    #leaveTypeConfigForm {
+        padding: var(--spacing-2);
+    }
+    
+    #leaveTypeConfigForm .button-group {
+        flex-direction: column;
+    }
+}
+
+/* --- Styles pour l'impression (PRÉSERVATION EXACTE) --- */
+@media print {
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    body.has-fixed-header {
+        padding-top: 0;
+    }
+    
+    header.main-header,
+    #toast-container,
+    .btn,
+    .import-export-controls,
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+        font-size: 12pt;
+        line-height: 1.4;
+        color: #000 !important;
+    }
+    
+    .section {
+        box-shadow: none !important;
+        border: 1px solid #333 !important;
+        margin-bottom: 15pt;
+        page-break-inside: avoid;
+    }
+    
+    h1, h2, h3 {
+        color: #000 !important;
+    }
+    
+    main.container {
+        max-width: 100% !important;
+        padding: 5mm !important;
+        margin: 0 !important;
+    }
+    
+    /* Impression des congés - 4 mois par ligne */
+    .conges-layout-grid {
+        display: block !important;
+    }
+    
+    .conges-sidebar-left,
+    .conges-sidebar-right,
+    #gestionDroitsSoldesSection {
+        display: none !important;
+    }
+    
+    .conges-main-calendar {
+        display: block !important;
+        grid-column: auto !important;
+        grid-row: auto !important;
+    }
+    
+    .annual-calendar-placeholder {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 8pt !important;
+    }
+    
+    .mini-month-placeholder {
+        border: 1px solid #333 !important;
+        padding: 4pt !important;
+        page-break-inside: avoid;
+    }
+    
+    .mini-month-placeholder h4 {
+        font-size: 8pt !important;
+        margin-bottom: 2pt !important;
+        color: #000 !important;
+    }
+    
+    .mini-month-placeholder table {
+        font-size: 6pt !important;
+    }
+    
+    .mini-month-placeholder th {
+        padding: 0.5pt 0 !important;
+        font-size: 5pt !important;
+    }
+    
+    .mini-month-placeholder td {
+        height: 14pt !important;
+    }
+    
+    .mini-day-cell {
+        font-size: 6pt !important;
+        line-height: 14pt;
+        color: #000 !important;
+    }
+    
+    .mini-day-cell.weekend {
+        background-color: #e8e8e8 !important;
+    }
+    
+    .mini-day-cell.holiday {
+        background-color: #fff0b3 !important;
+        color: #8B4513 !important;
+    }
+    
+    /* Impression de la configuration des congés */
+    #leaveTypesConfigContentWrapper {
+        display: none !important;
+    }
+    
+    /* Impression des fiches horaires - PRÉSERVATION EXACTE */
+    .timesheet-page-container .section:not(#printableTimesheetArea) {
+        display: none !important;
+    }
+    
+    .timesheet-page-container #printableTimesheetArea {
+        margin-top: 0 !important;
+    }
+    
+    .timesheet-page-container .timesheet-render-area {
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .timesheet-header {
+        font-size: 9pt !important;
+    }
+    
+    .timesheet-header .user-info input {
+        font-size: 9pt !important;
+        color: #000 !important;
+    }
+    
+    #timesheetTable {
+        font-size: 8pt !important;
+        border: 2px solid #000 !important;
+    }
+    
+    #timesheetTable th,
+    #timesheetTable td {
+        border: 1px solid #000 !important;
+        padding: 2pt !important;
+        height: 18px !important;
+        color: #000 !important;
+    }
+    
+    #timesheetTable th {
+        background-color: #d0d0d0 !important;
+        color: #000 !important;
+    }
+    
+    .time-cell,
+    .sub-header-time {
+        width: 18px !important;
+        min-width: 18px !important;
+        max-width: 18px !important;
+    }
+    
+    .day-col {
+        width: 70px !important;
+    }
+    
+    .timesheet-footer {
+        font-size: 8pt !important;
+        border-top: 2px solid #000 !important;
+        margin-top: 15pt !important;
+    }
+    
+    /* Préservation du contenu des cellules modifiées */
+    .editable-timesheet tbody td input.editable-cell-input {
+        color: #000 !important;
+        font-size: 8pt !important;
+    }
+    
+    .detailed-timesheet .obs-input {
+        color: #000 !important;
+        font-size: 8pt !important;
+    }
+    
+    #prevWeekCumulInput.prev-cumul-input {
+        color: #000 !important;
+        font-size: 8pt !important;
+    }
+}
+
+/* --- Accessibilité --- */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+*:focus-visible {
+    outline: 2px solid var(--secondary-color);
+    outline-offset: 2px;
+}
+
+/* --- Utilitaires complets --- */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mt-2 { margin-top: var(--spacing-2); }
+.mt-4 { margin-top: var(--spacing-4); }
+.mb-2 { margin-bottom: var(--spacing-2); }
+.mb-4 { margin-bottom: var(--spacing-4); }
+
+.hidden { display: none; }
+.block { display: block; }
+.flex { display: flex; }
+.grid { display: grid; }
+
+.no-print {
+    /* Classe utilisée pour masquer des éléments à l'impression */
+}
+
+.print-only {
+    display: none;
+}
+
+@media print {
+    .print-only {
+        display: block !important;
+    }
+}
+
+/* --- Styles pour éléments de formulaire spéciaux --- */
+input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+input[type="color"] {
+    width: 50px;
+    height: 32px;
+    padding: 2px;
+    border-radius: var(--border-radius-sm);
+}
+
+/* --- Classes responsives pour tables --- */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* --- Animations supplémentaires --- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOut {
+    to {
+        transform: translateX(100%) scale(0.8);
+        opacity: 0;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        opacity: 1; 
+    }
+    50% { 
+        opacity: 0.7; 
+    }
+}
+
+.animate-pulse { 
+    animation: pulse 2s infinite; 
+}
+
+.animate-fade-in-up { 
+    animation: fadeInUp 0.5s ease-out; 
+}
+
+/* --- Styles de statut --- */
+.status-active {
+    color: var(--success-color);
+}
+
+.status-inactive {
     color: var(--text-color-light);
 }
 
-/* --- Ajustement pour l'impression (Original V80 + Congés) --- */
-/* ... (Styles d'impression inchangés par rapport à la version précédente) ... */
-@media print { 
-    body.has-fixed-header { padding-top: 0; }
-    header.main-header, #toast-container { display: none !important; }
-    
-    /* --- Impression Fiche Horaire (from V80) --- */
-    .timesheet-page-container .section:not(#printableTimesheetArea), 
-    .timesheet-page-container .btn, 
-    .timesheet-page-container .import-export-controls { display: none !important; }
-    .timesheet-page-container #printableTimesheetArea { margin-top: 0 !important; }
-    .timesheet-page-container .timesheet-render-area { padding: 0 !important; border: none !important; box-shadow: none !important; }
-    .timesheet-header { font-size: 9pt !important; }
-    .timesheet-header .user-info input { font-size: 9pt !important; }
-    #timesheetTable { font-size: 8pt !important; }
-    #timesheetTable th, #timesheetTable td { padding: 1px !important; height: 18px !important; }
-    .time-cell, .sub-header-time { width: 18px !important; min-width: 18px !important; max-width: 18px !important; }
-    .day-col { width: 70px !important; }
-    .timesheet-footer { font-size: 8pt !important; }
-
-    /* --- Impression Page Congés (4 mois/ligne) --- */
-    .conges-layout-grid .conges-sidebar-left, 
-    .conges-layout-grid .conges-sidebar-right,
-    .conges-layout-grid .btn, 
-    .conges-layout-grid .form-group label, 
-    .conges-layout-grid input, 
-    .conges-layout-grid select, 
-    .conges-layout-grid textarea,
-    .conges-layout-grid #leaveTypesConfigContentWrapper { 
-        display: none !important;
-    }
-    main.container { max-width: 100% !important; padding: 5mm !important; margin: 0 !important; }
-    .conges-layout-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
-    .conges-layout-grid .section { box-shadow: none !important; border: none !important; padding: 0 !important; margin-bottom: 10px !important; }
-    .conges-layout-grid .conges-main-calendar.section { border: none !important; padding: 0 !important; overflow: visible !important; }
-    .calendar-view-title { font-size: 14pt !important; border-bottom: 1px solid #333 !important; margin-bottom: 10px !important; padding-bottom: 5px !important; text-align: left !important; }
-    .annual-calendar-placeholder { grid-template-columns: repeat(4, 1fr) !important; /* Maintenir 4 mois/ligne pour l'impression */ gap: 5px !important; padding: 0 !important; overflow: visible !important; }
-    .mini-month-placeholder { padding: 4px !important; border: 1px solid #ccc !important; page-break-inside: avoid !important; overflow: visible !important;}
-    .mini-month-placeholder h4 { font-size: 9pt !important; margin-bottom: 3px !important; }
-    .mini-month-placeholder table { font-size: 6pt !important; }
-    .mini-month-placeholder th { padding: 1px 0 !important; }
-    .mini-month-placeholder td { height: 16px !important; }
-    .mini-day-cell { width: 100% !important; height: 100% !important; font-size: 0.95em !important; border-radius: 1px !important; line-height: 16px;}
-    .mini-day-cell { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .mini-day-cell.weekend { background-color: #e8e8e8 !important; }
-    .mini-day-cell.holiday { background-color: #fff0b3 !important; } 
+.status-pending {
+    color: var(--warning-color);
 }
+
+.status-error {
+    color: var(--accent-color);
+}
+
+/* --- Éléments de navigation supplémentaires --- */
+.breadcrumb {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--spacing-4) 0;
+}
+
+.breadcrumb li {
+    margin-bottom: 0;
+}
+
+.breadcrumb li:not(:last-child)::after {
+    content: '/';
+    margin: 0 var(--spacing-2);
+    color: var(--text-color-light);
+}
+
+.breadcrumb a {
+    color: var(--text-color-light);
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: var(--secondary-color);
+}
+
+/* --- Styles pour pagination --- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: var(--spacing-6) 0;
+    gap: var(--spacing-1);
+}
+
+.pagination li {
+    margin-bottom: 0;
+}
+
+.pagination a,
+.pagination span {
+    display: block;
+    padding: var(--spacing-2) var(--spacing-3);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all var(--transition);
+}
+
+.pagination a:hover {
+    background-color: var(--bg-secondary);
+    border-color: var(--secondary-color);
+}
+
+.pagination .active span {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: white;
+}
+
+/* --- Styles pour onglets --- */
+.tabs {
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-4);
+}
+
+.tabs ul {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tabs li {
+    margin-bottom: 0;
+}
+
+.tabs a {
+    display: block;
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 2px solid transparent;
+    text-decoration: none;
+    color: var(--text-color-light);
+    transition: all var(--transition);
+}
+
+.tabs a:hover,
+.tabs a.active {
+    color: var(--secondary-color);
+    border-bottom-color: var(--secondary-color);
+}
+
+/* --- Styles pour accordéon --- */
+.accordion {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+}
+
+.accordion-item {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.accordion-item:last-child {
+    border-bottom: none;
+}
+
+.accordion-header {
+    background-color: var(--bg-secondary);
+    padding: var(--spacing-4);
+    cursor: pointer;
+    transition: background-color var(--transition);
+}
+
+.accordion-header:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.accordion-content {
+    padding: var(--spacing-4);
+    background-color: var(--surface);
+}
+
+/* --- Styles pour alertes --- */
+.alert {
+    padding: var(--spacing-4);
+    border-radius: var(--border-radius-md);
+    margin-bottom: var(--spacing-4);
+    border: 1px solid;
+}
+
+.alert-info {
+    background-color: rgba(8, 145, 178, 0.1);
+    border-color: var(--info-color);
+    color: var(--info-color);
+}
+
+.alert-success {
+    background-color: rgba(5, 150, 105, 0.1);
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+
+.alert-warning {
+    background-color: rgba(217, 119, 6, 0.1);
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+}
+
+.alert-error {
+    background-color: rgba(220, 38, 38, 0.1);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+/* --- Styles complémentaires --- */
+.progress {
+    width: 100%;
+    height: 20px;
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    margin: var(--spacing-2) 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: var(--secondary-color);
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    background: none;
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    background-color: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    display: none;
+    padding: var(--spacing-1) 0;
+}
+
+.dropdown.open .dropdown-menu {
+    display: block;
+}
+
+.dropdown-item {
+    display: block;
+    padding: var(--spacing-2) var(--spacing-3);
+    color: var(--text-color);
+    text-decoration: none;
+    transition: background-color var(--transition);
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-secondary);
+}
+
+/* === FIN DU CSS COMPLET === */
