@@ -4,94 +4,588 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Congés - Vue Annuelle</title>
-    <link rel="stylesheet" href="../css/styles.css"> <!-- Assurez-vous que le chemin est correct -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <style>
+/* === STYLES GÉNÉRAUX === */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    background-color: #f8fafc;
+}
+
+.has-fixed-header {
+    padding-top: 60px;
+}
+
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #1f2937;
+    text-decoration: none;
+}
+
+.main-header nav ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 1rem;
+}
+
+.main-header nav a {
+    text-decoration: none;
+    color: #6b7280;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.main-header nav a:hover,
+.main-header nav a.active {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+h1 {
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+}
+
+.section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* === LAYOUT CONGÉS === */
+.conges-page-layout {
+    display: grid;
+    grid-template-areas: 
+        "sidebar-left main-content sidebar-right";
+    grid-template-columns: 280px 1fr 320px;
+    gap: 1.5rem;
+    align-items: start;
+    margin-top: 1rem;
+}
+
+.conges-sidebar-left {
+    grid-area: sidebar-left;
+}
+
+.conges-center-column {
+    grid-area: main-content;
+}
+
+.conges-sidebar-right {
+    grid-area: sidebar-right;
+}
+
+.conges-sidebar-left .section,
+.conges-center-column .section,
+.conges-sidebar-right .section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+}
+
+.conges-sidebar-left .section:last-child,
+.conges-sidebar-right .section:last-child {
+    margin-bottom: 0;
+}
+
+.conges-sidebar-left .section h2,
+.conges-sidebar-right .section h2 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* === FORMULAIRES === */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* === BOUTONS === */
+.btn {
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary { background-color: #3b82f6; color: white; }
+.btn-primary:hover { background-color: #2563eb; }
+
+.btn-secondary { background-color: #6b7280; color: white; }
+.btn-secondary:hover { background-color: #4b5563; }
+
+.btn-success { background-color: #10b981; color: white; }
+.btn-success:hover { background-color: #059669; }
+
+.btn-danger { background-color: #ef4444; color: white; }
+.btn-danger:hover { background-color: #dc2626; }
+
+.btn-warning { background-color: #f59e0b; color: white; }
+.btn-warning:hover { background-color: #d97706; }
+
+.btn-light { 
+    background-color: #f3f4f6; 
+    color: #374151; 
+    border: 1px solid #d1d5db; 
+}
+.btn-light:hover { background-color: #e5e7eb; }
+
+.btn-block { width: 100%; }
+.btn-sm { padding: 0.5rem 0.75rem; font-size: 0.75rem; }
+.btn-xs { padding: 0.25rem 0.5rem; font-size: 0.65rem; }
+
+.button-group-horizontal {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* === TABLEAUX === */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th, td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+th {
+    background-color: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* === CALENDRIER === */
+.conges-main-calendar {
+    min-height: 420px;
+}
+
+.calendar-view-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-align: center;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #d1d5db;
+    color: #1f2937;
+}
+
+.annual-calendar-placeholder {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    overflow-x: auto;
+    min-width: 600px;
+}
+
+.mini-month-placeholder {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 0.5rem;
+    min-width: 140px;
+}
+
+.mini-month-placeholder h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+    margin: 0 0 0.5rem 0;
+    color: #1f2937;
+}
+
+.mini-month-placeholder table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.7rem;
+}
+
+.mini-month-placeholder th {
+    text-align: center;
+    padding: 0.25rem 0;
+    font-weight: 500;
+    color: #6b7280;
+    font-size: 0.65rem;
+}
+
+.mini-month-placeholder td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 0;
+    height: 22px;
+}
+
+.mini-day-cell {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: #111827;
+    font-weight: 500;
+    font-size: 0.7rem;
+    cursor: default;
+    transition: background-color 0.2s;
+}
+
+.mini-day-cell:hover {
+    background-color: #f9fafb;
+}
+
+.mini-day-cell.other-month {
+    color: #6b7280;
+    font-weight: 400;
+}
+
+.mini-day-cell.weekend {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.mini-day-cell.holiday {
+    background-color: #fef3c7;
+    color: #92400e;
+    font-weight: 600;
+}
+
+/* === LÉGENDE === */
+.legend-section h3 {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0;
+    font-size: 0.75rem;
+}
+
+.legend-color-box {
+    width: 14px;
+    height: 14px;
+    margin-right: 0.5rem;
+    border-radius: 3px;
+    border: 1px solid #9ca3af;
+    flex-shrink: 0;
+}
+
+.color-weekend {
+    background-color: #f3f4f6;
+}
+
+.color-holiday {
+    background-color: #fef3c7;
+}
+
+/* === PARAMÉTRAGE === */
+#leaveTypesConfigContentWrapper {
+    background-color: #f9fafb;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 0.75rem;
+    border: 1px solid #e5e7eb;
+}
+
+#leaveTypesConfigContentWrapper h4 {
+    font-size: 1rem;
+    color: #1f2937;
+    margin: 0 0 0.75rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #d1d5db;
+}
+
+#leaveTypeConfigForm {
+    background-color: white;
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    margin-top: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+/* Amélioration affichage couleurs dans tableau */
+.config-color-display {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 2px solid #374151;
+    display: inline-block;
+    margin: 0 auto;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+#leaveTypesConfigTable th {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.25rem;
+}
+
+#leaveTypesConfigTable td {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.25rem;
+}
+
+/* === SOLDES ET HISTORIQUE === */
+#soldesPeriodeTable {
+    font-size: 0.75rem;
+}
+
+#soldesPeriodeTable th,
+#soldesPeriodeTable td {
+    padding: 0.5rem 0.25rem;
+}
+
+#soldesPeriodeTable th {
+    font-size: 0.7rem;
+    background-color: #f9fafb;
+}
+
+#leaveRequestsListContainer {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#leaveRequestsListContainer table {
+    font-size: 0.7rem;
+}
+
+#leaveRequestsListContainer th,
+#leaveRequestsListContainer td {
+    padding: 0.25rem;
+}
+
+#leaveRequestsListContainer .legend-color-box {
+    width: 10px;
+    height: 10px;
+    margin-right: 0.25rem;
+}
+
+/* === NOTICE === */
+.toggle-content {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.toggle-content ul {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    font-size: 0.75rem;
+}
+
+.toggle-content li {
+    margin-bottom: 0.25rem;
+}
+
+/* === TOASTS === */
+#toast-container {
+    position: fixed;
+    top: 80px;
+    right: 1rem;
+    z-index: 9999;
+}
+
+.toast {
+    background: white;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-left: 4px solid #3b82f6;
+    animation: slideIn 0.3s ease-out;
+}
+
+.toast.success { border-left-color: #10b981; }
+.toast.warning { border-left-color: #f59e0b; }
+.toast.error { border-left-color: #ef4444; }
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1200px) {
+    .conges-page-layout {
+        grid-template-columns: 240px 1fr 280px;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .conges-page-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .conges-center-column { order: 1; }
+    .conges-sidebar-left { order: 2; }
+    .conges-sidebar-right { order: 3; }
+    
+    .annual-calendar-placeholder {
+        grid-template-columns: repeat(3, 1fr);
+        min-width: 100%;
+    }
+    
+    .conges-sidebar-left,
+    .conges-sidebar-right {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .annual-calendar-placeholder {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .mini-month-placeholder {
+        padding: 0.25rem;
+        min-width: auto;
+    }
+    
+    .button-group-horizontal {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .annual-calendar-placeholder {
+        grid-template-columns: 1fr;
+    }
+    
+    .conges-sidebar-left,
+    .conges-sidebar-right {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* === IMPRESSION === */
+@media print {
+    .conges-sidebar-left,
+    .conges-sidebar-right,
+    #controleParametrageSection {
+        display: none !important;
+    }
+    
+    .conges-page-layout {
+        display: block;
+    }
+    
+    .annual-calendar-placeholder {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 0.5rem;
+    }
+}
+    </style>
 </head>
 <body class="has-fixed-header">
     <header class="main-header">
-        <a href="dashboard.html" class="logo">GestionTemps</a>
+        <a href="pointage.html" class="logo">GestionTemps</a>
         <nav>
             <ul>
                 <li><a href="pointage.html">Pointage</a></li>
                 <li><a href="conges.html" class="active">Congés</a></li>
                 <li><a href="fiches-frais.html">Fiches de Frais</a></li>
-                <li><a href="fiches-horaires.html">Fiches Horaires</a></li>                
+                <li><a href="fiches-horaires.html">Fiches Horaires</a></li>
             </ul>
         </nav>
     </header>
 
     <main class="container">
-        <div class="conges-layout-grid">
+        <h1>Gestion des Congés</h1>
+
+        <div class="conges-page-layout">
             
-            <!-- Colonne de Gauche -->
+            <!-- Colonne de Gauche: Saisie, Contrôles, Légende -->
             <aside class="conges-sidebar-left">
-                <div class="section" id="controlesSauvegardeSection">
-                    <h2>Contrôles & Sauvegarde</h2>
-                    <div class="form-group">
-                        <label for="controleAnneeDebut">Période :</label>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="number" id="controleAnneeDebut" value="2025" min="2000" max="2050" style="width: 80px;">
-                            <span id="periodeAffichee">2025 - 2026</span>
-                        </div>
-                    </div>
-                    <button type="button" id="actualiserPeriodeBtn" class="btn btn-primary btn-block">Actualiser Période</button>
-                    <div class="button-group-horizontal">
-                        <button type="button" id="exportCongesBtn" class="btn btn-export btn-block">Exporter</button>
-                        <label for="importCongesFile" class="btn btn-import btn-block button-like-label">Importer</label>
-                        <input type="file" id="importCongesFile" accept=".json" style="display: none;">
-                    </div>
-                    <button type="button" id="imprimerVueBtn" class="btn btn-print btn-block">Imprimer</button>
-                </div>
-
-                <div class="section legend-section">
-                    <h3>Légende</h3>
-                    <div id="congesLegendContainer">
-                        <!-- La légende sera remplie par JS -->
-                    </div>
-                </div>
-
-                <div class="section" id="noticeUtilisationSectionWrapper"> <!-- ID du wrapper pour la section notice -->
-                    <h3>Notice d'Utilisation</h3>
-                    <button type="button" id="afficherNoticeBtn" class="btn btn-grey btn-block">Afficher Notice</button>
-                    <div id="contenuNotice" class="toggle-content" style="display: none; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
-                        <p>Ceci est un exemple de notice d'utilisation.</p>
-                        <ul>
-                            <li>Le calendrier affiche la période de Juin N à Mai N+1.</li>
-                            <li>Utilisez la section "Saisie des Absences" pour ajouter ou retirer des congés.</li>
-                            <li>Les soldes sont mis à jour automatiquement.</li>
-                            <li>Le paramétrage des types de congés est accessible via "Afficher Param."</li>
-                        </ul>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Colonne Centrale - Calendrier -->
-            <div class="conges-main-calendar section" id="calendarViewPrintableArea">
-                <h1 class="calendar-view-title">Vue Annuelle 2025 - 2026</h1>
-                <div id="customAnnualCalendarContainer" class="annual-calendar-placeholder">
-                    <!-- Mini-calendriers générés par JS -->
-                </div>
-            </div>
-
-            <!-- Colonne de Droite -->
-            <aside class="conges-sidebar-right">
                 <div class="section" id="saisieAbsencesSection">
-                    <h2>Saisie des Absences</h2>
+                    <h2>Saisie / Modification</h2>
                     <form id="saisieAbsencesForm">
                         <div class="form-group">
                             <label for="saisieTypeAbsence">Type :</label>
                             <select id="saisieTypeAbsence" name="saisieTypeAbsence" required>
                                 <option value="">Sélectionner...</option>
-                                <!-- Options remplies par JS -->
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="saisieDateDebut">Début :</label>
-                            <input type="date" id="saisieDateDebut" name="saisieDateDebut" value="2025-07-28" required>
+                            <input type="date" id="saisieDateDebut" name="saisieDateDebut" required>
                         </div>
                         <div class="form-group">
                             <label for="saisieDateFin">Fin (opt.) :</label>
-                            <input type="date" id="saisieDateFin" name="saisieDateFin" value="2025-08-15">
+                            <input type="date" id="saisieDateFin" name="saisieDateFin">
+                        </div>
+                        <div class="form-group">
+                            <label for="observationsTextarea">Observations :</label>
+                            <textarea id="observationsTextarea" rows="2" placeholder="Commentaire optionnel..."></textarea>
                         </div>
                         <div class="button-group-horizontal">
                             <button type="button" id="ajouterAbsenceBtn" class="btn btn-primary btn-block">Ajouter</button>
@@ -100,60 +594,930 @@
                     </form>
                 </div>
 
-                <div class="section" id="gestionDroitsSoldesSection">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h2 style="margin-bottom:0;">Gestion des Droits & Soldes</h2>
-                        <button id="afficherParamBtn" class="btn btn-sm btn-grey">Afficher Param.</button>
+                <div class="section" id="controlesSauvegardeSection">
+                    <h2>Contrôles & Sauvegarde</h2>
+                    <div class="form-group">
+                        <label for="controleAnneeDebut">Année de début (Mai) :</label>
+                        <input type="number" id="controleAnneeDebut" value="2024" min="2000" max="2050" style="width: 80px;">
                     </div>
-                    
-                    <h3>Soldes (période)</h3>
-                    <div class="table-wrapper">
-                        <table id="soldesPeriodeTable">
-                            <thead><tr><th>Type</th><th>Droits</th><th>Pris</th><th>Solde</th></tr></thead>
-                            <tbody>
-                                <tr><td colspan="4" style="text-align:center;">Chargement...</td></tr>
-                            </tbody>
-                        </table>
+                    <button type="button" id="actualiserPeriodeBtn" class="btn btn-secondary btn-block">Actualiser Période</button>
+                    <div class="button-group-horizontal">
+                        <button type="button" id="exportCongesBtn" class="btn btn-success btn-block">Exporter</button>
+                        <button type="button" id="importCongesBtn" class="btn btn-light btn-block">Importer</button>
+                        <input type="file" id="importCongesFile" accept=".json" style="display: none;">
                     </div>
+                    <button type="button" id="imprimerVueBtn" class="btn btn-light btn-block no-print">Imprimer Vue</button>
+                </div>
 
-                    <div id="leaveTypesConfigContentWrapper" class="toggle-content" style="display: none; margin-top:20px;">
-                        <h4>Paramétrage Types Congés</h4>
-                        <div class="table-wrapper"> <!-- Ajout d'un wrapper pour la table de config -->
-                            <table id="leaveTypesConfigTable">
-                                <thead><tr><th>Code</th><th>Libellé</th><th>Couleur</th><th>Droits/An</th><th>Actions</th></tr></thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        <h5 style="margin-top: 15px; margin-bottom: 10px;">Ajouter / Modifier Type</h5>
-                        <form id="leaveTypeConfigForm">
-                            <input type="hidden" id="ltConfigIsEditing" value="">
-                            <div class="form-group"><label for="ltConfigCode">Code:</label><input type="text" id="ltConfigCode" maxlength="10" required></div>
-                            <div class="form-group"><label for="ltConfigLabel">Libellé:</label><input type="text" id="ltConfigLabel" required></div>
-                            <div class="form-group"><label for="ltConfigColor">Couleur:</label><input type="color" id="ltConfigColor" value="#cccccc"></div>
-                            <div class="form-group"><label for="ltConfigInitial">Droits/An:</label><input type="number" id="ltConfigInitial" value="0" min="0" step="0.5" required style="max-width:100px;"></div>
-                            <div class="button-group">
-                                <button type="submit" id="addUpdateLtConfigBtn" class="btn btn-success btn-sm">Sauvegarder Type</button>
-                                <button type="button" id="clearLtConfigFormBtn" class="btn btn-light btn-sm">Nouveau</button>
-                            </div>
-                        </form>
+                <div class="section legend-section" id="congesLegendContainer">
+                    <h3>Légende</h3>
+                    <div class="legend-item">
+                        <span class="legend-color-box color-weekend"></span>Week-end
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color-box color-holiday"></span>Jour férié
                     </div>
                 </div>
 
-                <div class="section" id="observationsSection">
-                    <h3>Observations</h3>
-                    <textarea id="observationsTextarea" rows="3" placeholder="Saisissez vos observations ici..."></textarea>
+                <div class="section" id="noticeUtilisationSectionWrapper">
+                    <h3>Notice d'Utilisation</h3>
+                    <button type="button" id="afficherNoticeBtn" class="btn btn-light btn-block btn-sm">Afficher Notice</button>
+                    <div id="contenuNotice" class="toggle-content" style="display: none;">
+                        <p>Utilisez le sélecteur d'année pour définir l'année de début de la période de 12 mois (Mai à Avril suivant).</p>
+                        <ul>
+                            <li>Saisissez vos absences en sélectionnant le type, la date de début et éventuellement la date de fin.</li>
+                            <li>La suppression se fait en indiquant la date de début et le type de l'absence à retirer.</li>
+                            <li>Les soldes sont calculés sur la base des jours ouvrés (hors week-ends et jours fériés).</li>
+                        </ul>
+                    </div>
                 </div>
             </aside>
 
-        </div> <!-- Fin de .conges-layout-grid -->
+            <!-- Colonne Centrale: Calendrier et Paramétrage -->
+            <div class="conges-center-column">
+                <section class="conges-main-calendar section" id="calendarViewPrintableArea">
+                    <h2 class="calendar-view-title" id="periodeAffichee">Période Mai 2024 - Avril 2025</h2>
+                    <div id="customAnnualCalendarContainer" class="annual-calendar-placeholder">
+                        <!-- Calendriers générés par JavaScript -->
+                    </div>
+                </section>
+
+                <section id="controleParametrageSection" class="section no-print">
+                    <h2>
+                        Paramétrage des Types de Congés
+                        <button id="afficherParamBtn" class="btn btn-sm btn-light" style="float: right;">Afficher Param.</button>
+                    </h2>
+                    <div id="leaveTypesConfigContentWrapper" style="display: none;">
+                        <h4>Configuration des Types Actuels</h4>
+                        <div class="table-wrapper">
+                            <table id="leaveTypesConfigTable">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Libellé</th>
+                                        <th style="text-align: center;">Couleur</th>
+                                        <th style="text-align: center;">Droits/An</th>
+                                        <th style="text-align: center;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <h4 style="margin-top: 20px; margin-bottom: 10px;">Ajouter / Modifier un Type</h4>
+                        <form id="leaveTypeConfigForm">
+                            <input type="hidden" id="ltConfigIsEditing" value="">
+                            <div class="form-group">
+                                <label for="ltConfigCode">Code (max 10 car.):</label>
+                                <input type="text" id="ltConfigCode" maxlength="10" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ltConfigLabel">Libellé complet:</label>
+                                <input type="text" id="ltConfigLabel" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ltConfigColor">Couleur:</label>
+                                <input type="color" id="ltConfigColor" value="#cccccc">
+                            </div>
+                            <div class="form-group">
+                                <label for="ltConfigInitial">Droits Annuels (jours):</label>
+                                <input type="number" id="ltConfigInitial" value="0" min="0" step="0.5" required>
+                            </div>
+                            <div class="button-group-horizontal" style="grid-column: 1 / -1;">
+                                <button type="submit" id="addUpdateLtConfigBtn" class="btn btn-success">Sauvegarder Type</button>
+                                <button type="button" id="clearLtConfigFormBtn" class="btn btn-light">Nouveau / Annuler</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Colonne de Droite: Soldes et Historique -->
+            <aside class="conges-sidebar-right">
+                <div class="section" id="gestionDroitsSoldesSection">
+                    <h2>Soldes des Congés</h2>
+                    <div class="table-wrapper">
+                        <table id="soldesPeriodeTable">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th style="text-align: center;">Droits</th>
+                                    <th style="text-align: center;">Pris</th>
+                                    <th style="text-align: center;">Solde</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Historique des Demandes</h2>
+                    <div id="leaveRequestsListContainer">
+                        <p style="color: #666; font-style: italic;">Aucune demande pour le moment.</p>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
     </main>
 
     <div id="toast-container"></div>
 
-    <script src="../js/utils.js"></script> <!-- Assurez-vous que le chemin est correct -->
-    <script src="../js/export.js"></script> <!-- Assurez-vous que le chemin est correct, si utilisé -->
-    <script src="../js/auth.js"></script>   <!-- Assurez-vous que le chemin est correct, si utilisé -->
-    <script src="../js/conges.js"></script> <!-- Assurez-vous que le chemin est correct -->
-<script src="../js/mobile-ux.js"></script>
+    <script>
+// Système de gestion des congés - Version corrigée complète
+class CongesManager {
+    constructor() {
+        this.leaveTypesConfig = {};
+        this.allLeaveRequests = [];
+        this.currentYear = new Date().getMonth() < 4 ? 
+            new Date().getFullYear() - 1 : 
+            new Date().getFullYear();
+        
+        this.defaultLeaveTypes = {
+            CP: { label: "Congés Principaux (CP)", color: "#3498db", isPredefined: true, deletable: true, annualEntitlement: 25 },
+            RTT: { label: "RTT (RTT)", color: "#9b59b6", isPredefined: true, deletable: true, annualEntitlement: 12 },
+            CS: { label: "Congés Supplémentaires (CS)", color: "#2ecc71", isPredefined: true, deletable: true, annualEntitlement: 5 },
+            CEA: { label: "Enfant à Charge (CEA)", color: "#f39c12", isPredefined: true, deletable: true, annualEntitlement: 3 },
+            CA: { label: "Ancienneté (CA)", color: "#e67e22", isPredefined: true, deletable: true, annualEntitlement: 2 },
+            CF: { label: "Fractionnement (CF)", color: "#8e44ad", isPredefined: true, deletable: true, annualEntitlement: 2 },
+            MALADIE: { label: "Congé Maladie", color: "#e74c3c", isPredefined: true, deletable: true, annualEntitlement: 0 },
+            FORMATION: { label: "Formation", color: "#34495e", isPredefined: true, deletable: true, annualEntitlement: 0 },
+            SANS_SOLDE: { label: "Congé sans solde", color: "#95a5a6", isPredefined: true, deletable: true, annualEntitlement: 0 }
+        };
+        
+        this.frenchHolidays = {};
+        this.init();
+    }
+
+    init() {
+        try {
+            this.loadLeaveTypesConfig();
+            this.loadAllLeaveRequests();
+            this.setupEventListeners();
+            this.updateUI();
+            this.showToast("Module Congés initialisé", "success");
+            console.log("Module Congés prêt");
+        } catch (error) {
+            console.error("Erreur initialisation:", error);
+            this.showToast("Erreur d'initialisation", "error");
+        }
+    }
+
+    // === UTILITAIRES ===
+    dateToYYYYMMDD(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    parseYYYYMMDD(dateStr) {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day);
+    }
+
+    getFrenchHolidays(year) {
+        if (this.frenchHolidays[year]) {
+            return this.frenchHolidays[year];
+        }
+
+        const holidays = [
+            { date: `${year}-01-01`, name: "Jour de l'An" },
+            { date: `${year}-05-01`, name: "Fête du Travail" },
+            { date: `${year}-05-08`, name: "Victoire 1945" },
+            { date: `${year}-07-14`, name: "Fête Nationale" },
+            { date: `${year}-08-15`, name: "Assomption" },
+            { date: `${year}-11-01`, name: "Toussaint" },
+            { date: `${year}-11-11`, name: "Armistice" },
+            { date: `${year}-12-25`, name: "Noël" }
+        ];
+
+        // Calcul de Pâques
+        const easter = this.calculateEaster(year);
+        holidays.push({ date: this.dateToYYYYMMDD(easter), name: "Pâques" });
+        
+        const easterMonday = new Date(easter);
+        easterMonday.setDate(easter.getDate() + 1);
+        holidays.push({ date: this.dateToYYYYMMDD(easterMonday), name: "Lundi de Pâques" });
+        
+        const ascension = new Date(easter);
+        ascension.setDate(easter.getDate() + 39);
+        holidays.push({ date: this.dateToYYYYMMDD(ascension), name: "Ascension" });
+        
+        const whitMonday = new Date(easter);
+        whitMonday.setDate(easter.getDate() + 50);
+        holidays.push({ date: this.dateToYYYYMMDD(whitMonday), name: "Lundi de Pentecôte" });
+
+        this.frenchHolidays[year] = holidays;
+        return holidays;
+    }
+
+    calculateEaster(year) {
+        const a = year % 19;
+        const b = Math.floor(year / 100);
+        const c = year % 100;
+        const d = Math.floor(b / 4);
+        const e = b % 4;
+        const f = Math.floor((b + 8) / 25);
+        const g = Math.floor((b - f + 1) / 3);
+        const h = (19 * a + b - d - g + 15) % 30;
+        const i = Math.floor(c / 4);
+        const k = c % 4;
+        const l = (32 + 2 * e + 2 * i - h - k) % 7;
+        const m = Math.floor((a + 11 * h + 22 * l) / 451);
+        const month = Math.floor((h + l - 7 * m + 114) / 31);
+        const day = ((h + l - 7 * m + 114) % 31) + 1;
+        return new Date(year, month - 1, day);
+    }
+
+    isColorDark(hexColor) {
+        const hex = hexColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness < 128;
+    }
+
+    showToast(message, type = 'info', duration = 3000) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, duration);
+    }
+
+    // === STOCKAGE EN MÉMOIRE ===
+    loadLeaveTypesConfig() {
+        this.leaveTypesConfig = { ...this.defaultLeaveTypes };
+        console.log('Configuration par défaut chargée');
+    }
+
+    loadAllLeaveRequests() {
+        this.allLeaveRequests = [];
+        console.log('Demandes initialisées');
+    }
+
+    // === CALCULS ===
+    calculateWorkingDays(startDate, endDate) {
+        let count = 0;
+        const iterDate = new Date(startDate);
+        const endIterDate = new Date(endDate);
+
+        const startY = iterDate.getFullYear();
+        const endY = endIterDate.getFullYear();
+        let holidays = new Set();
+        
+        for (let y = startY; y <= endY; y++) {
+            this.getFrenchHolidays(y).forEach(h => holidays.add(h.date));
+        }
+        
+        while (iterDate <= endIterDate) {
+            const dayOfWeek = iterDate.getDay();
+            const dateStr = this.dateToYYYYMMDD(iterDate);
+            if (dayOfWeek !== 0 && dayOfWeek !== 6 && !holidays.has(dateStr)) {
+                count++;
+            }
+            iterDate.setDate(iterDate.getDate() + 1);
+        }
+        return count;
+    }
+
+    calculateUsedDaysForPeriod(leaveType, periodStart, periodEnd) {
+        return this.allLeaveRequests
+            .filter(req => {
+                const reqStartDate = this.parseYYYYMMDD(req.startDate);
+                const reqEndDate = this.parseYYYYMMDD(req.endDate);
+                return req.type === leaveType && 
+                       reqStartDate <= periodEnd && 
+                       reqEndDate >= periodStart;
+            })
+            .reduce((total, req) => {
+                const reqStartDate = this.parseYYYYMMDD(req.startDate);
+                const reqEndDate = this.parseYYYYMMDD(req.endDate);
+
+                const effectiveStartDate = new Date(Math.max(reqStartDate.getTime(), periodStart.getTime()));
+                const effectiveEndDate = new Date(Math.min(reqEndDate.getTime(), periodEnd.getTime()));
+                
+                if (effectiveStartDate > effectiveEndDate) return total;
+
+                const workingDays = this.calculateWorkingDays(effectiveStartDate, effectiveEndDate);
+                return total + workingDays;
+            }, 0);
+    }
+
+    // === INTERFACE UTILISATEUR ===
+    updatePeriodeAffichee() {
+        const periodeAfficheeEl = document.getElementById('periodeAffichee');
+        if (periodeAfficheeEl) {
+            periodeAfficheeEl.textContent = `Période Mai ${this.currentYear} - Avril ${this.currentYear + 1}`;
+        }
+    }
+
+    populateLeaveTypeSelect() {
+        const leaveTypeSelect = document.getElementById('saisieTypeAbsence');
+        if (!leaveTypeSelect) return;
+        
+        leaveTypeSelect.innerHTML = '<option value="">-- Choisir un type --</option>';
+        Object.entries(this.leaveTypesConfig).forEach(([code, config]) => {
+            const option = document.createElement('option');
+            option.value = code;
+            option.textContent = config.label;
+            leaveTypeSelect.appendChild(option);
+        });
+    }
+
+    updateLegend() {
+        const legendContainer = document.getElementById('congesLegendContainer');
+        if (!legendContainer) return;
+        
+        let legendHTML = `<h3>Légende</h3>
+            <div class="legend-item">
+                <span class="legend-color-box color-weekend"></span>Week-end
+            </div>
+            <div class="legend-item">
+                <span class="legend-color-box color-holiday"></span>Jour férié
+            </div>`;
+        
+        // Ajouter tous les types de congés avec leurs couleurs
+        Object.entries(this.leaveTypesConfig).forEach(([code, config]) => {
+            legendHTML += `
+                <div class="legend-item">
+                    <span class="legend-color-box" style="background-color: ${config.color};"></span>
+                    ${config.label}
+                </div>`;
+        });
+        
+        legendContainer.innerHTML = legendHTML;
+    }
+
+    generateAnnualCalendar() {
+        const annualCalendarEl = document.getElementById('customAnnualCalendarContainer');
+        if (!annualCalendarEl) return;
+
+        console.log(`Génération calendrier pour la période Mai ${this.currentYear} - Avril ${this.currentYear + 1}`);
+        annualCalendarEl.innerHTML = '';
+        
+        const periodeStartYear = this.currentYear;
+        const periodeEndYear = this.currentYear + 1;
+        
+        const holidaysPeriodeStart = this.getFrenchHolidays(periodeStartYear);
+        const holidaysPeriodeEnd = this.getFrenchHolidays(periodeEndYear);
+        const holidayDates = new Set([
+            ...holidaysPeriodeStart.map(h => h.date),
+            ...holidaysPeriodeEnd.map(h => h.date)
+        ]);
+
+        for (let i = 0; i < 12; i++) {
+            const monthOffset = 4 + i; // Mai = mois index 4
+            const currentMonthIndex = monthOffset % 12;
+            const currentDisplayYear = monthOffset < 12 ? periodeStartYear : periodeEndYear;
+
+            const monthContainer = document.createElement('div');
+            monthContainer.className = 'mini-month-placeholder';
+
+            const monthDate = new Date(currentDisplayYear, currentMonthIndex, 1);
+            const monthName = monthDate.toLocaleDateString('fr-FR', { month: 'long' });
+            const monthTitle = document.createElement('h4');
+            monthTitle.textContent = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${currentDisplayYear}`;
+            monthContainer.appendChild(monthTitle);
+
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            ['L', 'M', 'M', 'J', 'V', 'S', 'D'].forEach(day => {
+                const th = document.createElement('th');
+                th.textContent = day;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            const firstDayOfMonth = new Date(currentDisplayYear, currentMonthIndex, 1);
+            const lastDayOfMonth = new Date(currentDisplayYear, currentMonthIndex + 1, 0);
+            
+            const startDateCalendarGrid = new Date(firstDayOfMonth);
+            const dayOfWeekStart = startDateCalendarGrid.getDay();
+            const diff = dayOfWeekStart === 0 ? -6 : 1 - dayOfWeekStart;
+            startDateCalendarGrid.setDate(startDateCalendarGrid.getDate() + diff);
+
+            let currentDateIter = new Date(startDateCalendarGrid);
+            for (let week = 0; week < 6; week++) {
+                if (week > 0 && currentDateIter.getMonth() !== currentMonthIndex && currentDateIter > lastDayOfMonth) break;
+
+                const row = document.createElement('tr');
+                for (let j = 0; j < 7; j++) {
+                    const cell = document.createElement('td');
+                    const dayCell = document.createElement('div');
+                    dayCell.className = 'mini-day-cell';
+                    dayCell.textContent = currentDateIter.getDate();
+
+                    const dateStr = this.dateToYYYYMMDD(currentDateIter);
+                    const isCurrentDisplayMonth = currentDateIter.getFullYear() === currentDisplayYear && currentDateIter.getMonth() === currentMonthIndex;
+                    const isWeekend = currentDateIter.getDay() === 0 || currentDateIter.getDay() === 6;
+                    const isHoliday = holidayDates.has(dateStr);
+
+                    if (!isCurrentDisplayMonth) dayCell.classList.add('other-month');
+                    if (isWeekend && isCurrentDisplayMonth) dayCell.classList.add('weekend');
+                    if (isHoliday && isCurrentDisplayMonth) dayCell.classList.add('holiday');
+                    
+                    const leaveForDate = this.allLeaveRequests.find(req => dateStr >= req.startDate && dateStr <= req.endDate);
+                    if (leaveForDate && this.leaveTypesConfig[leaveForDate.type] && isCurrentDisplayMonth && !isWeekend && !isHoliday) {
+                        const leaveType = this.leaveTypesConfig[leaveForDate.type];
+                        dayCell.style.backgroundColor = leaveType.color;
+                        dayCell.style.color = this.isColorDark(leaveType.color) ? '#fff' : '#000';
+                        dayCell.title = `${leaveType.label} (${leaveForDate.startDate} - ${leaveForDate.endDate})`;
+                    } else if (leaveForDate && isCurrentDisplayMonth && (isWeekend || isHoliday)) {
+                        const leaveType = this.leaveTypesConfig[leaveForDate.type];
+                        if (leaveType) {
+                            dayCell.title = (dayCell.title ? dayCell.title + " | " : "") + `${leaveType.label} (non décompté)`;
+                        }
+                    }
+                    
+                    cell.appendChild(dayCell);
+                    row.appendChild(cell);
+                    currentDateIter.setDate(currentDateIter.getDate() + 1);
+                }
+                tbody.appendChild(row);
+            }
+            table.appendChild(tbody);
+            monthContainer.appendChild(table);
+            annualCalendarEl.appendChild(monthContainer);
+        }
+    }
+
+    updateSoldesTable() {
+        const tableBody = document.querySelector('#soldesPeriodeTable tbody');
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = '';
+
+        const periodeStartDate = this.parseYYYYMMDD(`${this.currentYear}-05-01`);
+        const periodeEndDate = this.parseYYYYMMDD(`${this.currentYear + 1}-04-30`);
+
+        Object.entries(this.leaveTypesConfig).forEach(([code, config]) => {
+            if (config.annualEntitlement > 0) {
+                const usedDaysInPeriod = this.calculateUsedDaysForPeriod(code, periodeStartDate, periodeEndDate);
+                const entitlementForPeriod = config.annualEntitlement;
+                const remaining = entitlementForPeriod - usedDaysInPeriod;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-size: 0.75rem;">${config.label.length > 15 ? code : config.label}</td>
+                    <td style="text-align: center; font-size: 0.75rem;">${entitlementForPeriod}</td>
+                    <td style="text-align: center; font-size: 0.75rem;">${usedDaysInPeriod}</td>
+                    <td style="text-align: center; font-size: 0.75rem; color: ${remaining >= 0 ? '#059669' : '#dc2626'}">${remaining}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        });
+    }
+
+    displayLeaveRequestsList() {
+        const listContainer = document.getElementById('leaveRequestsListContainer');
+        if (!listContainer) return;
+
+        if (this.allLeaveRequests.length === 0) {
+            listContainer.innerHTML = '<p style="color: #666; font-style: italic; font-size: 0.8rem;">Aucune demande enregistrée.</p>';
+            return;
+        }
+
+        let html = '<table style="width: 100%; border-collapse: collapse; font-size: 0.7rem;">';
+        html += '<thead><tr style="background-color: #f9fafb;">';
+        html += '<th style="padding: 0.25rem; border: 1px solid #d1d5db; font-size: 0.65rem;">Type</th>';
+        html += '<th style="padding: 0.25rem; border: 1px solid #d1d5db; font-size: 0.65rem;">Début</th>';
+        html += '<th style="padding: 0.25rem; border: 1px solid #d1d5db; font-size: 0.65rem;">Fin</th>';
+        html += '<th style="padding: 0.25rem; border: 1px solid #d1d5db; font-size: 0.65rem; text-align: center;">J.O.</th>';
+        html += '<th style="padding: 0.25rem; border: 1px solid #d1d5db; font-size: 0.65rem; text-align: center;">Actions</th>';
+        html += '</tr></thead><tbody>';
+
+        const sortedRequests = [...this.allLeaveRequests].sort((a, b) => {
+            const dateA = this.parseYYYYMMDD(a.startDate);
+            const dateB = this.parseYYYYMMDD(b.startDate);
+            return dateB.getTime() - dateA.getTime();
+        });
+
+        sortedRequests.forEach(request => {
+            const leaveType = this.leaveTypesConfig[request.type];
+            const startDate = this.parseYYYYMMDD(request.startDate);
+            const endDate = this.parseYYYYMMDD(request.endDate);
+            const workingDays = this.calculateWorkingDays(startDate, endDate);
+
+            html += '<tr>';
+            html += `<td style="padding: 0.25rem; border: 1px solid #e5e7eb; font-size: 0.65rem;">
+                <span class="legend-color-box" style="background-color: ${leaveType?.color || '#ccc'}; width: 10px; height: 10px; display: inline-block; margin-right: 0.25rem; border: 1px solid #9ca3af;"></span>
+                ${leaveType?.label.substring(0, 8) || request.type}
+            </td>`;
+            html += `<td style="padding: 0.25rem; border: 1px solid #e5e7eb; font-size: 0.65rem;">${startDate.toLocaleDateString('fr-FR').substring(0, 5)}</td>`;
+            html += `<td style="padding: 0.25rem; border: 1px solid #e5e7eb; font-size: 0.65rem;">${endDate.toLocaleDateString('fr-FR').substring(0, 5)}</td>`;
+            html += `<td style="padding: 0.25rem; border: 1px solid #e5e7eb; text-align: center; font-size: 0.65rem;">${workingDays}</td>`;
+            html += `<td style="padding: 0.25rem; border: 1px solid #e5e7eb; text-align: center;">
+                <button onclick="congesManager.deleteRequest('${request.id}')" class="btn btn-xs btn-danger" style="padding: 1px 3px; font-size: 0.6rem; min-height: 18px;">×</button>
+            </td>`;
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        listContainer.innerHTML = html;
+    }
+
+    updateLeaveTypesConfigTable() {
+        const tableBody = document.querySelector('#leaveTypesConfigTable tbody');
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = '';
+        Object.entries(this.leaveTypesConfig).forEach(([code, config]) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="font-weight: 500;">${code}</td>
+                <td>${config.label}</td>
+                <td style="text-align: center;">
+                    <div class="config-color-display" style="background-color: ${config.color};"></div>
+                </td>
+                <td style="text-align: center; font-weight: 500;">${config.annualEntitlement}</td>
+                <td style="text-align: center;">
+                    <button onclick="congesManager.editType('${code}')" class="btn btn-xs btn-warning" style="margin-right: 3px;">Modifier</button>
+                    ${config.deletable ? 
+                        `<button onclick="congesManager.deleteType('${code}')" class="btn btn-xs btn-danger">Suppr.</button>` : 
+                        ''}
+                </td>`;
+            tableBody.appendChild(row);
+        });
+    }
+
+    updateUI() {
+        this.updatePeriodeAffichee();
+        this.populateLeaveTypeSelect();
+        this.generateAnnualCalendar();
+        this.updateLegend();
+        this.updateSoldesTable();
+        this.displayLeaveRequestsList();
+        this.updateLeaveTypesConfigTable();
+    }
+
+    // === GESTION DES CONGÉS ===
+    addLeaveRequest() {
+        const typeSelect = document.getElementById('saisieTypeAbsence');
+        const startDateInput = document.getElementById('saisieDateDebut');
+        const endDateInput = document.getElementById('saisieDateFin');
+        const observationsInput = document.getElementById('observationsTextarea');
+
+        const type = typeSelect.value;
+        const startDate = startDateInput.value;
+        let endDate = endDateInput.value || startDate;
+        const observations = observationsInput.value;
+
+        if (!type || !startDate) {
+            this.showToast("Veuillez remplir le type et la date de début", "warning");
+            return;
+        }
+
+        if (startDate > endDate) {
+            this.showToast("La date de fin ne peut pas être antérieure à la date de début", "warning");
+            return;
+        }
+
+        const newRequest = {
+            id: Date.now().toString(),
+            type: type,
+            startDate: startDate,
+            endDate: endDate,
+            observations: observations,
+            createdAt: new Date().toISOString()
+        };
+
+        this.allLeaveRequests.push(newRequest);
+
+        // Reset form
+        typeSelect.value = '';
+        startDateInput.value = '';
+        endDateInput.value = '';
+        observationsInput.value = '';
+
+        this.updateUI();
+        this.showToast("Congé ajouté avec succès", "success");
+    }
+
+    removeLeaveRequest() {
+        const typeSelect = document.getElementById('saisieTypeAbsence');
+        const startDateInput = document.getElementById('saisieDateDebut');
+
+        const type = typeSelect.value;
+        const startDate = startDateInput.value;
+
+        if (!type || !startDate) {
+            this.showToast("Veuillez spécifier le type et la date de début pour supprimer", "warning");
+            return;
+        }
+
+        const requestIndex = this.allLeaveRequests.findIndex(req => 
+            req.type === type && req.startDate === startDate
+        );
+
+        if (requestIndex === -1) {
+            this.showToast("Aucune demande trouvée avec ces critères", "warning");
+            return;
+        }
+
+        this.allLeaveRequests.splice(requestIndex, 1);
+        this.updateUI();
+        this.showToast("Congé supprimé avec succès", "success");
+    }
+
+    deleteRequest(id) {
+        const requestIndex = this.allLeaveRequests.findIndex(req => req.id === id);
+        if (requestIndex !== -1) {
+            this.allLeaveRequests.splice(requestIndex, 1);
+            this.updateUI();
+            this.showToast("Demande supprimée avec succès", "success");
+        }
+    }
+
+    // === GESTION DES TYPES DE CONGÉS ===
+    addOrUpdateLeaveType() {
+        const codeInput = document.getElementById('ltConfigCode');
+        const labelInput = document.getElementById('ltConfigLabel');
+        const colorInput = document.getElementById('ltConfigColor');
+        const entitlementInput = document.getElementById('ltConfigInitial');
+        const isEditingInput = document.getElementById('ltConfigIsEditing');
+
+        const code = codeInput.value.trim().toUpperCase();
+        const label = labelInput.value.trim();
+        const color = colorInput.value;
+        const entitlement = parseFloat(entitlementInput.value) || 0;
+        const isEditing = isEditingInput.value;
+
+        if (!code || !label) {
+            this.showToast("Code et libellé sont obligatoires", "warning");
+            return;
+        }
+
+        // Vérification: si nouveau type et code existe déjà
+        if (!isEditing && this.leaveTypesConfig[code]) {
+            this.showToast("Ce code existe déjà", "warning");
+            return;
+        }
+
+        // Si modification et code différent, vérifier que le nouveau code n'existe pas
+        if (isEditing && isEditing !== code && this.leaveTypesConfig[code]) {
+            this.showToast("Ce nouveau code existe déjà", "warning");
+            return;
+        }
+
+        // Si modification et code différent, supprimer l'ancien
+        if (isEditing && isEditing !== code) {
+            delete this.leaveTypesConfig[isEditing];
+        }
+
+        // Sauvegarder le type
+        this.leaveTypesConfig[code] = {
+            label: label,
+            color: color,
+            annualEntitlement: entitlement,
+            isPredefined: false,
+            deletable: true
+        };
+
+        this.clearLeaveTypeForm();
+        this.updateUI();
+        this.showToast(isEditing ? "Type modifié avec succès" : "Type ajouté avec succès", "success");
+    }
+
+    editType(code) {
+        const config = this.leaveTypesConfig[code];
+        if (!config) return;
+
+        // Remplir le formulaire
+        document.getElementById('ltConfigCode').value = code;
+        document.getElementById('ltConfigLabel').value = config.label;
+        document.getElementById('ltConfigColor').value = config.color;
+        document.getElementById('ltConfigInitial').value = config.annualEntitlement;
+        document.getElementById('ltConfigIsEditing').value = code;
+
+        // Changer le texte du bouton
+        document.getElementById('addUpdateLtConfigBtn').textContent = 'Modifier Type';
+        
+        // Scroll vers le formulaire
+        document.getElementById('leaveTypeConfigForm').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'nearest' 
+        });
+        
+        this.showToast(`Edition du type ${code}`, "info");
+    }
+
+    deleteType(code) {
+        if (!this.leaveTypesConfig[code]) return;
+        
+        const config = this.leaveTypesConfig[code];
+        
+        if (!confirm(`Êtes-vous sûr de vouloir supprimer le type "${config.label}" ?`)) {
+            return;
+        }
+
+        // Vérifier si le type est utilisé dans des demandes
+        const usedInRequests = this.allLeaveRequests.some(req => req.type === code);
+        if (usedInRequests) {
+            if (!confirm(`Ce type est utilisé dans des demandes existantes. Confirmer la suppression ?`)) {
+                return;
+            }
+        }
+
+        delete this.leaveTypesConfig[code];
+        this.updateUI();
+        this.showToast("Type supprimé avec succès", "success");
+    }
+
+    clearLeaveTypeForm() {
+        document.getElementById('ltConfigCode').value = '';
+        document.getElementById('ltConfigLabel').value = '';
+        document.getElementById('ltConfigColor').value = '#cccccc';
+        document.getElementById('ltConfigInitial').value = '0';
+        document.getElementById('ltConfigIsEditing').value = '';
+        document.getElementById('addUpdateLtConfigBtn').textContent = 'Sauvegarder Type';
+    }
+
+    // === IMPORT/EXPORT ===
+    exportData() {
+        const data = {
+            leaveTypesConfig: this.leaveTypesConfig,
+            allLeaveRequests: this.allLeaveRequests,
+            exportDate: new Date().toISOString(),
+            version: '1.2'
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
+            type: 'application/json'
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `conges_export_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        this.showToast("Données exportées avec succès", "success");
+    }
+
+    importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+
+                if (data.leaveTypesConfig) {
+                    this.leaveTypesConfig = { ...this.defaultLeaveTypes, ...data.leaveTypesConfig };
+                }
+
+                if (data.allLeaveRequests) {
+                    this.allLeaveRequests = data.allLeaveRequests;
+                }
+
+                this.updateUI();
+                this.showToast("Données importées avec succès", "success");
+            } catch (error) {
+                console.error("Erreur import:", error);
+                this.showToast("Erreur lors de l'import", "error");
+            }
+        };
+        reader.readAsText(file);
+
+        event.target.value = '';
+    }
+
+    // === EVENT LISTENERS ===
+    setupEventListeners() {
+        // Contrôle année
+        const anneeDebutEl = document.getElementById('controleAnneeDebut');
+        if (anneeDebutEl) {
+            anneeDebutEl.value = this.currentYear;
+            anneeDebutEl.addEventListener('change', (e) => {
+                const newYear = parseInt(e.target.value);
+                if (!isNaN(newYear) && newYear >= 2000 && newYear <= 2050) {
+                    this.currentYear = newYear;
+                    this.updateUI();
+                    this.showToast("Période mise à jour", "info");
+                } else {
+                    this.showToast("Année invalide", "warning");
+                    e.target.value = this.currentYear;
+                }
+            });
+        }
+
+        // Boutons congés
+        const addLeaveBtn = document.getElementById('ajouterAbsenceBtn');
+        if (addLeaveBtn) {
+            addLeaveBtn.addEventListener('click', () => this.addLeaveRequest());
+        }
+
+        const removeLeaveBtn = document.getElementById('retirerAbsenceBtn');
+        if (removeLeaveBtn) {
+            removeLeaveBtn.addEventListener('click', () => this.removeLeaveRequest());
+        }
+
+        // Boutons contrôles
+        const exportBtn = document.getElementById('exportCongesBtn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => this.exportData());
+        }
+
+        const importBtn = document.getElementById('importCongesBtn');
+        const importInput = document.getElementById('importCongesFile');
+        if (importBtn && importInput) {
+            importBtn.addEventListener('click', () => importInput.click());
+            importInput.addEventListener('change', (e) => this.importData(e));
+        }
+
+        const actualiserBtn = document.getElementById('actualiserPeriodeBtn');
+        if (actualiserBtn) {
+            actualiserBtn.addEventListener('click', () => {
+                this.updateUI();
+                this.showToast("Vue actualisée", "info");
+            });
+        }
+
+        const imprimerBtn = document.getElementById('imprimerVueBtn');
+        if (imprimerBtn) {
+            imprimerBtn.addEventListener('click', () => window.print());
+        }
+
+        // Notice
+        const afficherNoticeBtn = document.getElementById('afficherNoticeBtn');
+        const contenuNotice = document.getElementById('contenuNotice');
+        if (afficherNoticeBtn && contenuNotice) {
+            afficherNoticeBtn.addEventListener('click', () => {
+                if (contenuNotice.style.display === 'none') {
+                    contenuNotice.style.display = 'block';
+                    afficherNoticeBtn.textContent = 'Masquer Notice';
+                } else {
+                    contenuNotice.style.display = 'none';
+                    afficherNoticeBtn.textContent = 'Afficher Notice';
+                }
+            });
+        }
+
+        // Paramétrage
+        const afficherParamBtn = document.getElementById('afficherParamBtn');
+        const leaveTypesConfigWrapper = document.getElementById('leaveTypesConfigContentWrapper');
+        if (afficherParamBtn && leaveTypesConfigWrapper) {
+            afficherParamBtn.addEventListener('click', () => {
+                if (leaveTypesConfigWrapper.style.display === 'none') {
+                    leaveTypesConfigWrapper.style.display = 'block';
+                    afficherParamBtn.textContent = 'Masquer Param.';
+                    this.updateLeaveTypesConfigTable();
+                } else {
+                    leaveTypesConfigWrapper.style.display = 'none';
+                    afficherParamBtn.textContent = 'Afficher Param.';
+                }
+            });
+        }
+
+        // Formulaire de configuration des types
+        const leaveTypeConfigForm = document.getElementById('leaveTypeConfigForm');
+        if (leaveTypeConfigForm) {
+            leaveTypeConfigForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.addOrUpdateLeaveType();
+            });
+        }
+
+        const clearFormBtn = document.getElementById('clearLtConfigFormBtn');
+        if (clearFormBtn) {
+            clearFormBtn.addEventListener('click', () => this.clearLeaveTypeForm());
+        }
+    }
+}
+
+// Initialisation
+let congesManager;
+
+// Attendre que la page soit chargée
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM chargé, initialisation du gestionnaire de congés...');
+    
+    // Initialiser le gestionnaire
+    congesManager = new CongesManager();
+    
+    // Exposer globalement pour les callbacks
+    window.congesManager = congesManager;
+});
+    </script>
 </body>
 </html>
